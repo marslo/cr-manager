@@ -5,22 +5,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cr-manager"
-# Make sure this version aligns with your git tags for clarity
-version = "0.0.1" # Or bump to 0.0.2 if you re-tag after these changes
+version = "0.0.3"
 description = "Tool to manage copyright headers in source files."
-# readme = "README.md" # Optional: Add a README file
-requires-python = ">=3.8" # Adjust if your code needs a different minimum version
-# license = {text = "Apache-2.0"} # Add your chosen license (e.g., Apache-2.0, MIT)
-
-# List any external libraries your script imports (leave empty if none)
+requires-python = ">=3.8"
 dependencies = []
+# license = {text = "..."}
 
 [project.scripts]
-# This defines the command 'cr-manager' that points to the main function
-# in your cr_manager.py script.
-cr-manager = "cr_manager:main"
+# 指向新位置的 main 函数
+cr-manager = "cr_manager.main_cli:main"
 
-# Helps setuptools find your 'libs' package automatically
+# 查找 src 目录下的包
 [tool.setuptools.packages.find]
-where = ["."] # Search relative to pyproject.toml
-include = ["libs*"] # Include the 'libs' package
+where = ["src"]
