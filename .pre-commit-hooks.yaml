@@ -1,0 +1,18 @@
+-   id: update-copyright   # This is the ID users will reference in their config
+    name: Update Copyright Headers (cr-manager)
+    description: Adds, updates, or checks copyright headers using the cr-manager tool.
+    entry: cr_manager.py  # The script pre-commit will execute
+    language: python
+    language_version: python3  # Explicitly state Python 3
+    # Specify the types of files this hook should run against.
+    # Adjust this list based on the 'filetypes' defined in your FILE_TYPE_MAP
+    # Common pre-commit types include: python, java, groovy, go, rust, ruby, shell, text, yaml, json etc.
+    # Check pre-commit documentation if unsure about specific types like jenkinsfile/gradle.
+    # Using 'types_or_groups' is generally preferred over regex if possible.
+    types_or_groups: [ python, java, groovy, shell ]
+    # Alternatively, use a regex for more control over file names/extensions:
+    # files: \.(py|sh|java|groovy|gradle)$|Jenkinsfile(?i) # Example regex, case-insensitive Jenkinsfile
+
+    # You could define default arguments here, but often it's better
+    # to let the user specify the action (--add, --update, --check) in their config.
+    # args: []
