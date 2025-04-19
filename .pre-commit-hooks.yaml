@@ -6,4 +6,5 @@
     entry: cr-manager
     language: python
     language_version: python3
-    types: [ python, java, groovy, shell ] # Corrected key
+    files: \.(py|sh|java|groovy)$
+    # types: [ python, java, groovy, shell ] # Corrected key
