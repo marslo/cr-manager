@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List
 
 try:
-    from libs.helper import ColorHelpFormatter, COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_YELLOW
-    from libs.manager import CopyrightManager, detect_file_format
+    from .libs.helper import ColorHelpFormatter, COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_YELLOW
+    from .libs.manager import CopyrightManager, detect_file_format
 except ImportError as e:
     print(f"Error: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py.")
     print(f"Details: {e}")
