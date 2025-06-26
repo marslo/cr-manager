@@ -1,0 +1,94 @@
+# Python
+# -----------------------------------------------------------------------------
+# JetBrains IDE (PyCharm, IntelliJ) configuration files
+/.idea/
+
+# Visual Studio Code
+/.vscode/
+
+# virtual environments
+/venv/
+/.venv/
+/env/
+/ENV/
+/virtualenv/
+/.virtualenv/
+
+# compiled Python file (bytecode)
+*.pyc
+
+# cache
+__pycache__/
+.python-version
+
+# python wheel and egg packaging files
+/build/
+/dist/
+/downloads/
+/eggs/
+/*.egg-info/
+/*.egg
+
+# pip cache and logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# celery related files
+celerybeat-schedule
+celerybeat.pid
+
+# Sphinx documentation build directory
+/docs/_build/
+
+# pytest cache and coverage reports
+.pytest_cache/
+.tox/
+.nox/
+
+# code coverage reports and related files
+.coverage
+.coverage.*
+/htmlcov/
+nosetests.xml
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# flaskr
+instance/
+.webassets-cache
+
+# scrapy
+.scrapy
+
+# system files
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+
+# sensitive files
+.env
+.env.*
+*.env
+env.sh
+
+# logs
+*.log
+logs/
+*.log.*
+
+# test
+./tests
