@@ -1,10 +1,10 @@
 # yamllint disable rule:indentation
--   id: update-copyright
-    name: Update Copyright Headers (cr-manager)
+---
+-   id: cr-manager
+    name: Update Copyright Headers
     description: Adds, updates, or checks copyright headers using the cr-manager tool.
-    # Use the console script defined in pyproject.toml
     entry: cr-manager
     language: python
     language_version: python3
-    files: \.(py|sh|java|groovy)$
-    # types: [ python, java, groovy, shell ] # Corrected key
+    files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx)$)'
+    args: ["--update"]

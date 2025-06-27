@@ -1,20 +1,15 @@
 # pyproject.toml
+
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cr-manager"
-version = "0.0.3"
-description = "Tool to manage copyright headers in source files."
-requires-python = ">=3.8"
-dependencies = []
-# license = {text = "..."}
+version = "2.0.0"
+description = "Tool to automatically add, update, or delete multi-format copyright headers"
 
 [project.scripts]
-# 指向新位置的 main 函数
-cr-manager = "cr_manager.main_cli:main"
+cr-manager = "cli.crm:main"
 
-# 查找 src 目录下的包
 [tool.setuptools.packages.find]
-where = ["src"]
