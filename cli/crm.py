@@ -23,7 +23,7 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
-VERSION = "v2.0.1"
+VERSION = "v2.0.2"
 
 def main():
     """Main function to handle command-line arguments and process files."""
