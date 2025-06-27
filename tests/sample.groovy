@@ -6,7 +6,7 @@
  * Licensed under the Apache License, Version 2.0                              *
  *******************************************************************************
  *
- * @author       marslo@mai.com
+ * @author       marslo@mail.com
  * @since        2025-01-07
  * @description  this class is for message constants, including job description, css style, etc.
 **/
