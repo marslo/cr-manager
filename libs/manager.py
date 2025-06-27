@@ -492,7 +492,7 @@ class CopyrightManager:
         if debug:
             header = f"\n--- DEBUG PREVIEW: ADD to {path} ---\n" if verbose else "\n"
             footer = "\n--- END PREVIEW ---" if verbose else ""
-            print( f"{header}{final_content}{footer}", end="" )
+            print( f"{header}{COLOR_GRAY}{final_content}{COLOR_RESET}{footer}", end="" )
             return True, "debug_added"
 
         path.write_text( final_content, encoding='utf-8' )
@@ -550,7 +550,7 @@ class CopyrightManager:
             if debug:
                 header = f"\n--- DEBUG PREVIEW: UPDATE for {path} ---\n" if verbose else "\n"
                 footer = "\n--- END PREVIEW ---" if verbose else ""
-                print( f"{header}{final_content}{footer}", end="" )
+                print( f"{header}{COLOR_GRAY}{final_content}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_updated"
 
             path.write_text( final_content, encoding='utf-8' )
