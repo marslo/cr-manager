@@ -4,5 +4,5 @@
  *
  * @author: marslo
  * @date: 2025-01-01
- * @brief: Sample C code for demonstration purposes.
+ * @description: Sample C code for demonstration purposes.
  */
