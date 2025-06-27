@@ -1,6 +1,6 @@
 /**
  *******************************************************************************
- * Copyright © 2025 marslo                                                     *
- * Licensed under the MIT License, Version 2.0                                 *
+ * Copyright © 2024 marslo                                                     *
+ * Licensed under the MIT License, Version 1.0                                 *
  *******************************************************************************
 **/
