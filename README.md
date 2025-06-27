@@ -12,6 +12,59 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
 
+## Integration to pre-commit hooks
+
+### add following content into `.pre-commit-config.yaml` file:
+```yaml
+# `COPYRIGHT` file can be found in the root directory of this repository
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v2.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+```
+
+```yaml
+# specify the copyright file to use
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v2.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
+```
+
+```yaml
+# only check the copyright headers without modifying files
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v2.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--check"]
+```
+
+### install the pre-commit hooks
+```bash
+$ pre-commit install
+```
+
+### run the cr-manager for all files ( whitout hook )
+```bash
+$ pre-commit run cr-manager --all-files
+```
+
+![run cr-manager --all-files](./screenshots/cr-manager-pre-commit.png)
+
+### automatic check copyright headers on commit
+```bash
+$ git commit -m "your commit message"
+```
+
 ---
 
 ## Supported File Types and Formats

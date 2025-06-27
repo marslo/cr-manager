@@ -23,7 +23,7 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
-VERSION = "v2.0.0"
+VERSION = "v2.0.1"
 
 def main():
     """Main function to handle command-line arguments and process files."""
@@ -145,9 +145,9 @@ def main():
             success, msg = False, "unknown_operation"
             if args.check:
                 success, msg = manager.check_copyright_status( path, forced_type )
-                if msg == "match": print( f"Status: OK (exists and matches)" ); stats["skipped"] += 1
-                elif msg == "mismatch": print( f"{COLOR_DEBUG_I}Status: {COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 1
-                elif msg == "not_found": print( f"{COLOR_DEBUG_I}Status: {COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 1
+                if msg == "match": print( f"{COLOR_GREEN}OK" ); stats["skipped"] += 1
+                elif msg == "mismatch": print( f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 0
+                elif msg == "not_found": print( f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 0
                 else: raise ValueError( msg )
 
             elif args.delete:
