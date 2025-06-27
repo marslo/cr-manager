@@ -1,6 +1,25 @@
-# copyright manager (crm.py)
+# cr-manager -- the Copyright Header Manager
 
 A tool to automatically **add**, **update**, or **delete** multi-format copyright headers in source files.
+
+---
+
+- [Features](#features)
+- [Integration to pre-commit hooks](#integration-to-pre-commit-hooks)
+  - [add following content into `.pre-commit-config.yaml` file:](#add-following-content-into-pre-commit-configyaml-file)
+  - [install the pre-commit hooks](#install-the-pre-commit-hooks)
+  - [run the cr-manager for all files ( whitout hook )](#run-the-cr-manager-for-all-files--whitout-hook-)
+  - [automatic check copyright headers on commit](#automatic-check-copyright-headers-on-commit)
+- [Supported File Types and Formats](#supported-file-types-and-formats)
+  - [using filetype to update the un-supported filetype](#using-filetype-to-update-the-un-supported-filetype)
+- [Action Modes](#action-modes)
+- [Usage](#usage)
+  - [add new copyright headers](#add-new-copyright-headers)
+  - [update existing copyright headers](#update-existing-copyright-headers)
+  - [delete existing copyright headers](#delete-existing-copyright-headers)
+  - [debug mode](#debug-mode)
+  - [check specific filetype](#check-specific-filetype)
+  - [help message](#help-message)
 
 ---
 
@@ -11,6 +30,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Check**: Verify the presence and correctness of headers.
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
+
+### upcoming features
+
+- Supports combined author-info and copyright headers.
 
 ## Integration to pre-commit hooks
 
@@ -74,6 +97,7 @@ $ git commit -m "your commit message"
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
 ```
+$ python -m cli.crm --filetype python
 #===============================================================================
 # Copyright © 2025 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
@@ -89,6 +113,7 @@ $ git commit -m "your commit message"
 | `jenkinsfile`, `groovy`, `gradle`, `java` | `.groovy`, `.java` |
 
 ```
+$ python -m cli.crm --filetype java
 /**
  *******************************************************************************
  * Copyright © 2025 marslo                                                     *
@@ -106,6 +131,7 @@ $ git commit -m "your commit message"
 | `c`, `cpp`, `c++`, `cxx`, `h`, `hpp`, `hxx` | `.c`, `.cpp`, `.cxx`, `.h`, `.hpp`, `.hxx` |
 
 ```
+$ python -m cli.crm --filetype cpp
 /**
  * Copyright © 2025 marslo
  * Licensed under the MIT License, Version 2.0
@@ -116,6 +142,13 @@ $ git commit -m "your commit message"
 
 ---
 
+### using filetype to update the un-supported filetype
+```bash
+$ python -m cli.crm [--update] --filetype python /path/to/file.txt
+```
+
+![un-supported filetype](./screenshots/handle-unsupported-filetype.png)
+
 ## Action Modes
 
 > [!TIP]
@@ -123,6 +156,7 @@ $ git commit -m "your commit message"
 
 | OPTION     | DESCRIPTION                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
+|            | Add mode: Automatically adds copyright headers to files.                    |
 | `--check`  | Check mode: Verifies file copyright status (match, mismatch, or not found). |
 | `--delete` | Delete mode: Removes detected copyright headers from files.                 |
 | `--update` | Update mode: Forces replacement of copyright or adds it if missing.         |
@@ -132,14 +166,14 @@ $ git commit -m "your commit message"
 ### add new copyright headers
 ```bash
 # single file
-$ python crm.py /path/to/file
+$ python -m cli.crm /path/to/file
 
 # files recursively in directories
-$ python crm.py --recursive /path/to/directory
+$ python -m cli.crm --recursive /path/to/directory
 
 # add to non-supported suffixes with supplied filetype
 # -- e.e. add to .txt files as python files --
-$ python crm.py --filetype python /path/to/file.txt
+$ python -m cli.crm --filetype python /path/to/file.txt
 ```
 
 ### update existing copyright headers
@@ -149,10 +183,10 @@ $ python crm.py --filetype python /path/to/file.txt
 
 ```bash
 # single file
-$ python crm.py --update /path/to/file
+$ python -m cli.crm --update /path/to/file
 
 # files recursively in directories
-$ python crm.py --update --recursive /path/to/directory
+$ python -m cli.crm --update --recursive /path/to/directory
 ```
 
 ### delete existing copyright headers
@@ -162,29 +196,22 @@ $ python crm.py --update --recursive /path/to/directory
 
 ```bash
 # single file
-$ python crm.py --delete /path/to/file
+$ python -m cli.crm --delete /path/to/file
 
 # files recursively in directories
-$ python crm.py --delete --recursive /path/to/directory
+$ python -m cli.crm --delete --recursive /path/to/directory
 ```
 
 ### debug mode
 ```bash
 # *add* without modifying files
-$ python crm.py --debug /path/to/file
+$ python -m cli.crm --debug /path/to/file
 
 $ *update* without modifying files
-$ python crm.py --update --debug /path/to/file
+$ python -m cli.crm --update --debug /path/to/file
 
 # *delete* without modifying files
-$ python crm.py --delete --debug /path/to/file
-```
-
-### check specific filetype
-```bash
-$ python crm.py --filetype python
-$ python crm.py --filetype java
-$ python crm.py --filetype cpp
+$ python -m cli.crm --delete --debug /path/to/file
 ```
 
 ### help message
