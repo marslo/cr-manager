@@ -136,11 +136,11 @@ $ python crm.py --filetype cpp
 
 ### help message
 ```bash
-$ python crm.py --help
+$ python -m cli.crm --help
 USAGE
-  crm.py [--check | --delete | --update] [--copyright-file FILE] [--filetype TYPE] [--recursive]
-         [--debug] [--verbose] [--help] [--version]
-         [FILES ...]
+  python -m cli.crm [--check | --delete | --update] [--copyright FILE] [--filetype TYPE] [--recursive]
+                    [--debug] [--verbose] [--help] [--version]
+                    [FILES ...]
 
 A tool to automatically add, update, or delete multi-format copyright headers.
 
@@ -153,8 +153,8 @@ ACTION MODES (default is add):
   --update                  Update mode: Forces replacement of copyright or adds it if missing.
 
 OPTIONS:
-  --copyright-file FILE     Specify the copyright template file path (default: COPYRIGHT).
-  --filetype TYPE           Force a filetype to override auto-detection (e.g., 'python', 'java'). If
+  --copyright FILE          Specify the copyright template file path (default: COPYRIGHT).
+  --filetype -t TYPE        Force a filetype to override auto-detection (e.g., 'python', 'java'). If
                             provided alone, displays a formatted preview for that type.
   --recursive -r            If FILES includes directories, process their contents recursively.
   --debug -d                Debug mode: Preview the result of an action without modifying files.

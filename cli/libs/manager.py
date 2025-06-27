@@ -25,7 +25,7 @@ FILE_TYPE_MAP = {
     },
     'groovy_style_comment': {
         'filetypes' : { 'jenkinsfile', 'groovy', 'gradle', 'java' },
-        'suffixes'  : { '.groovy', '.java' },
+        'suffixes'  : { '.groovy', '.java', '.gradle' },
         'config'    : {
             'start_line'     : '/**',
             'end_line'       : '**/',
@@ -362,7 +362,7 @@ class CopyrightManager:
                         block_start = i
                         in_block = True
                 elif in_block:
-                    return block_start, i - 1
+                    if line.strip(): return block_start, i - 1
             if in_block:
                 return block_start, len( lines ) - 1
 
@@ -432,8 +432,8 @@ class CopyrightManager:
                     final_content += '\n'
 
             if debug:
-                header = f"\n--- DEBUG PREVIEW: DELETE from {path} ---\n" if verbose else "\n"
-                footer = "\n--- END PREVIEW ---" if verbose else ""
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: DELETE from {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
                 print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_deleted"
 
@@ -497,9 +497,10 @@ class CopyrightManager:
                 final_content += '\n'
 
         if debug:
-            header = f"\n--- DEBUG PREVIEW: ADD to {path} ---\n" if verbose else "\n"
-            footer = "\n--- END PREVIEW ---" if verbose else ""
-            print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
+            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: ADD to {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+            footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
+            debug_output = '\n'.join(formatted_lines)
+            print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="" )
             return True, "debug_added"
 
         path.write_text( final_content, encoding='utf-8' )
@@ -511,53 +512,30 @@ class CopyrightManager:
             fmt = detect_file_format( path, forced_type )
             if not fmt: raise ValueError( "unsupported_format" )
 
+            # always generate the new, ideal copyright block first.
+            new_formatted_lines = self._format_copyright_as_list( fmt )
+
             content = path.read_text( encoding='utf-8' )
             lines = content.splitlines()
             block_start, block_end = self._detect_copyright_block( lines, fmt )
 
+            # if no block is found, fall back to inserting it.
             if block_start == -1:
-                new_formatted_lines = self._format_copyright_as_list( fmt )
                 return self._insert_copyright( path, content, new_formatted_lines, fmt, debug=debug, verbose=verbose )
 
-            config = FILE_TYPE_MAP[fmt]["config"]
-
-            if config.get( "simple_format", False ):
-                cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end )
-                new_content_lines = self._format_copyright_content_lines( fmt, bordered=False )
-
-                if cr_start != -1:
-                    new_lines_before = lines[:cr_start]
-                    new_lines_after = lines[cr_end + 1:]
-
-                    separator = []
-                    if any( line.strip().lstrip(config['comment_string'].strip()) for line in new_lines_after ):
-                        if not self._is_blank_comment_line(new_lines_after[0], config):
-                            separator = [config["comment_string"].rstrip()]
-
-                    new_lines = new_lines_before + new_content_lines + separator + new_lines_after
-                else:
-                    insert_pos = block_start + 1
-                    separator = [ config["comment_string"].rstrip() ]
-                    new_lines = lines[:insert_pos] + new_content_lines + separator + lines[insert_pos:]
-            else:             # bordered format logic
-                border_start, border_end = self._find_bordered_section( lines, block_start, block_end, fmt )
-
-                if border_start != -1 and border_end != -1:
-                    new_content = self._format_copyright_content_lines( fmt, bordered=True )
-                    new_lines = lines[:border_start + 1] + new_content + lines[border_end:]
-                else:         # fallback
-                    new_formatted_lines = self._format_copyright_as_list( fmt )
-                    new_lines = lines[:block_start] + new_formatted_lines + lines[block_end + 1:]
-
+            # a block was found, so replace the old block with the new one.
+            new_lines = lines[:block_start] + new_formatted_lines + lines[block_end + 1:]
             final_content = '\n'.join( new_lines )
+
+            # preserve trailing newline if it existed.
             if content.endswith('\n'):
-                if not final_content.endswith('\n'):
-                    final_content += '\n'
+                if not final_content.endswith('\n'): final_content += '\n'
 
             if debug:
-                header = f"\n--- DEBUG PREVIEW: UPDATE for {path} ---\n" if verbose else "\n"
-                footer = "\n--- END PREVIEW ---" if verbose else ""
-                print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: UPDATE for {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
+                debug_output = '\n'.join(new_formatted_lines)
+                print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_updated"
 
             path.write_text( final_content, encoding='utf-8' )

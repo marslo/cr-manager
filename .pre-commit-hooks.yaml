@@ -1,0 +1,9 @@
+---
+# .pre-commit-hooks.yaml
+-   id: cr-manager
+    name: Add and Update Copyright
+    description: This hook updates the copyright information in specified files.
+    entry: cr-manager
+    language: python
+    files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx)$)'
+    args: ["--update"]

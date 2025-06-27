@@ -7,9 +7,14 @@ from pathlib import Path
 from typing import List
 
 try:
-    from libs.helper import ColorHelpFormatter
-    from libs.helper import COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_DEBUG_I, COLOR_PURPLE_I, COLOR_CYAN_I, COLOR_GREEN_I, COLOR_RED_I, COLOR_YELLOW_I, COLOR_BLUE_I
-    from libs.manager import CopyrightManager
+    from .libs.helper import (
+        ColorHelpFormatter,
+        COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN,
+        COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_DEBUG_I,
+        COLOR_PURPLE_I, COLOR_CYAN_I, COLOR_GREEN_I, COLOR_RED_I,
+        COLOR_YELLOW_I, COLOR_BLUE_I,
+    )
+    from .libs.manager import CopyrightManager
 except ImportError as e:
     print( f"Error: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
@@ -22,7 +27,7 @@ VERSION = "v2.0"
 def main():
     """Main function to handle command-line arguments and process files."""
     parser = argparse.ArgumentParser(
-        prog='crm.py',
+        prog='python -m cli.crm',
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
         formatter_class=ColorHelpFormatter,
         add_help=False
@@ -54,7 +59,7 @@ def main():
     option_group.add_argument( '--debug',     '-d' , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
     option_group.add_argument( '--verbose',   '-v' , action='store_true' , help='Show a detailed processing summary.' )
     option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
-    option_group.add_argument( '--version'         , action='version'    , version=f"%(prog)s - cr-manager {VERSION}", help="Show program's version number and exit." )
+    option_group.add_argument( '--version'         , action='version'    , version=f"cr-manager {VERSION}", help="Show program's version number and exit." )
 
     args = parser.parse_args()
 
