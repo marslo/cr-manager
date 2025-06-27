@@ -7,12 +7,9 @@ from pathlib import Path
 from typing import List
 
 try:
-    from libs.helper import ColorHelpFormatter, COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_YELLOW
+    from libs.helper import ColorHelpFormatter
+    from libs.helper import COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_DEBUG_I, COLOR_PURPLE_I, COLOR_CYAN_I, COLOR_GREEN_I, COLOR_RED_I, COLOR_YELLOW_I, COLOR_BLUE_I
     from libs.manager import CopyrightManager
-    COLOR_DARK_WHITE    = "\x1b[0;37;2;3m"
-    COLOR_PURPLE_ITALIC = "\x1b[0;35;3m"
-    COLOR_GREEN_ITALIC  = "\x1b[0;32m"
-    COLOR_YELLOW_ITALIC = "\x1b[0;33;1m"
 except ImportError as e:
     print( f"Error: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
@@ -24,14 +21,14 @@ DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
 def main():
     """Main function to handle command-line arguments and process files."""
     parser = argparse.ArgumentParser(
-        prog='cr-manager',
+        prog='$ python3 crm.py',
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
         formatter_class=ColorHelpFormatter,
-        add_help=False             # manually add help for better group control
+        add_help=False
     )
 
     # argument groups for better help output organization
-    pos_group = parser.add_argument_group( COLOR_BOLD + 'POSITIONAL ARGUMENTS' + COLOR_RESET )
+    pos_group    = parser.add_argument_group( COLOR_BOLD + 'POSITIONAL ARGUMENTS' + COLOR_RESET )
     action_group = parser.add_argument_group( COLOR_BOLD + 'ACTION MODES (choose one, default is add)' + COLOR_RESET )
     option_group = parser.add_argument_group( COLOR_BOLD + 'OPTIONS' + COLOR_RESET )
 
@@ -60,7 +57,7 @@ def main():
 
     args = parser.parse_args()
 
-    # initialize copyrightmanager
+    # initialize copyright manager
     try:
         manager = CopyrightManager( args.copyright_file )
     except SystemExit as e:
@@ -71,9 +68,9 @@ def main():
     if args.filetype and not args.files and not is_action_mode:
         formatted = manager.format_for_file( forced_filetype=args.filetype )
         if formatted:
-            if args.verbose: print( f"--- Copyright Format Preview ({args.filetype}) ---" )
+            if args.verbose: print( f"{COLOR_DEBUG_I}--- Copyright Format Preview ({COLOR_DEBUG}{args.filetype}{COLOR_DEBUG_I}) ---{COLOR_RESET}" )
             print( f"{COLOR_DEBUG}{formatted}{COLOR_RESET}" )
-            if args.verbose: print( "--- End of Preview ---" )
+            if args.verbose: print( f"{COLOR_DEBUG_I}--- End of Preview ---{COLOR_RESET}" )
             sys.exit(0)
         else:
             sys.exit(1)
@@ -108,15 +105,16 @@ def main():
     exit_code = 0
     stats = { "processed": 0, "skipped": 0, "updated": 0, "added": 0, "deleted": 0, "errors": 0, "debug": 0 }
     forced_type = args.filetype.lower() if args.filetype else None
+    supported_types_str = ', '.join(manager.supported_types)
 
     for path in files_to_process:
         stats["processed"] += 1
         # print( f"[{stats['processed']}/{len(files_to_process)}] Processing: {path} ... ", end="" )
-        print( f"\n{COLOR_DARK_WHITE}>> "
-               f"{COLOR_GREEN_ITALIC}{stats['processed']}{COLOR_DARK_WHITE}/"
-               f"{COLOR_YELLOW_ITALIC}{len(files_to_process)}"
-               f"{COLOR_PURPLE_ITALIC} {path} "
-               f"{COLOR_DARK_WHITE}... {COLOR_RESET}",
+        print( f"{COLOR_DEBUG_I}>> "
+               f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
+               f"{COLOR_YELLOW}{len(files_to_process)}"
+               f"{COLOR_PURPLE_I} {path} "
+               f"{COLOR_DEBUG_I}... {COLOR_RESET}",
               end=""
              )
 
@@ -125,8 +123,8 @@ def main():
             if args.check:
                 success, msg = manager.check_copyright_status( path, forced_type )
                 if msg == "match": print( f"Status: OK (exists and matches)" ); stats["skipped"] += 1
-                elif msg == "mismatch": print( f"Status: {COLOR_YELLOW}Needs Update{COLOR_RESET}" ); exit_code = 1
-                elif msg == "not_found": print( f"Status: {COLOR_YELLOW}Not Found{COLOR_RESET}" ); exit_code = 1
+                elif msg == "mismatch": print( f"{COLOR_DEBUG_I}Status: {COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 1
+                elif msg == "not_found": print( f"{COLOR_DEBUG_I}Status: {COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 1
                 else: raise ValueError( msg )
 
             elif args.delete:
@@ -134,57 +132,65 @@ def main():
                 if msg.startswith( "debug" ):
                     if args.verbose: print( f"Status: Dry-run delete preview shown" )
                     stats["debug"] += 1
-                elif success: print( f"Action: {COLOR_YELLOW}Deleted{COLOR_RESET}" ); stats["deleted"] += 1
-                elif msg == "not_found": print( f"Action: Not found, nothing to delete" ); stats["skipped"] += 1
+                elif success: print( f"{COLOR_YELLOW}DELETED{COLOR_RESET}" ); stats["deleted"] += 1
+                elif msg == "not_found": print( f"{COLOR_DEBUG_I}action: Not found, nothing to delete{COLOR_RESET}" ); stats["skipped"] += 1
                 else: raise ValueError( msg )
 
             elif args.update:
                 success, msg = manager.update_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
                 if msg.startswith( "debug" ):
-                    if args.verbose: print( f"Status: Dry-run update preview shown" )
+                    if args.verbose: print( f"{COLOR_DEBUG_I}Status: {COLOR_DEBUG}DRYRUN {COLOR_DEBUG_I}preview shown{COLOR_RESET}" )
                     stats["debug"] += 1
                 elif success:
-                    if msg == "updated": print( f"Action: {COLOR_CYAN}Updated{COLOR_RESET}" ); stats["updated"] += 1
-                    elif msg == "inserted": print( f"Action: {COLOR_CYAN}Added (was not found){COLOR_RESET}" ); stats["added"] += 1
+                    if msg == "updated": print( f"{COLOR_CYAN}UPDATED{COLOR_RESET}" ); stats["updated"] += 1
+                    elif msg == "inserted": print( f"{COLOR_GREEN}ADDED{COLOR_RESET}" ); stats["added"] += 1
                 else: raise ValueError( msg )
 
-            else:                  # Default action: add
+            else:                  # default action: add
                 success, msg = manager.add_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
                 if msg.startswith( "debug" ):
                     if args.verbose: print( f"Status: Dry-run add preview shown" )
                     stats["debug"] += 1
                 elif success:
-                    if msg == "skipped": print( f"Action: Skipped (already exists and matches)" ); stats["skipped"] += 1
-                    elif msg == "updated": print( f"Action: {COLOR_CYAN}Updated (due to mismatch){COLOR_RESET}" ); stats["updated"] += 1
-                    elif msg == "inserted": print( f"Action: {COLOR_CYAN}Added{COLOR_RESET}" ); stats["added"] += 1
+                    if msg == "skipped": print( f"{COLOR_DEBUG}SKIPPED {COLOR_DEBUG_I}(already exists and matches){COLOR_RESET}" ); stats["skipped"] += 1
+                    elif msg == "updated": print( f"{COLOR_CYAN}UPDATED {COLOR_DEBUG_I}(due to mismatch){COLOR_RESET}" ); stats["updated"] += 1
+                    elif msg == "inserted": print( f"{COLOR_CYAN}ADDED{COLOR_RESET}" ); stats["added"] += 1
                 else: raise ValueError( msg )
 
         except ( ValueError, FileNotFoundError ) as e:
             if "unsupported_format" in str(e):
-                print( f"Status: Unsupported file format" )
+                print( f"{COLOR_YELLOW}UNSUPPORTED{COLOR_RESET}" )
+                print( f"{COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes include: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}" )
             elif "generate_failed" in str(e):
-                print( f"Status: {COLOR_BOLD}Error: Failed to generate copyright for target format{COLOR_RESET}" )
+                print( f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}Failed to generate copyright for target format{COLOR_RESET}" )
             else:
-                print( f"Status: {COLOR_BOLD}Error: {e}{COLOR_RESET}" )
+                print( f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}{e}{COLOR_RESET}" )
             stats["errors"] += 1
             exit_code = 1
         except Exception as e:
-            print( f"{COLOR_BOLD}Unexpected error: {e}{COLOR_RESET}" )
+            print( f"{COLOR_BOLD}UNEXPECTED ERROR: {e}{COLOR_RESET}" )
             stats["errors"] += 1
             exit_code = 1
 
     if args.verbose:
-        print( "\n--- Processing Summary ---" )
-        print( f"Total files processed: {len(files_to_process)}" )
-        if args.debug: print( f"Debug previews shown: {stats['debug']}" )
-        elif args.check: print( f"Matched/OK: {stats['skipped']}" ); print(f"Needs action/Not found: (see logs above)" )
-        else: print( f"Added: {stats['added']}" ); print(f"Updated: {stats['updated']}"); print(f"Deleted: {stats['deleted']}"); print(f"Skipped: {stats['skipped']}" )
-        print( f"Errors/Unsupported: {stats['errors']}" )
+        print( "\n{COLOR_DEBUG_I}--- Processing Summary ---{COLOR_RESET}" )
+        print( f"{COLOR_DEBUG_I}total files processed: {COLOR_DEBUG}{len(files_to_process)}{COLOR_RESET}" )
+        if args.debug:
+            print( f"{COLOR_DEBUG_I}debug previews shown: {COLOR_CYAN}{stats['debug']}{COLOR_RESET}" )
+        elif args.check:
+            print( f"Matched/OK: {stats['skipped']}" );
+            print( f"{COLOR_DEBUG_I}needs action/not found: (see logs above){COLOR_RESET}"  )
+        else:
+            print( f"{COLOR_DEBUG}ADDED   : {COLOR_GREEN_I}{stats['added']}{COLOR_RESET}" );
+            print( f"{COLOR_DEBUG}UPDATED : {COLOR_CYAN_I}{stats['updated']}{COLOR_RESET}" );
+            print( f"{COLOR_DEBUG}DELETED : {COLOR_RED_I}{stats['deleted']}{COLOR_RESET}" );
+            print( f"{COLOR_DEBUG}SKIPPED : {COLOR_YELLOW_I}{stats['skipped']}{COLOR_RESET}" )
+        print( f"{COLOR_DEBUG}ERRORS/UNSUPPORTED: {COLOR_PURPLE_I}{stats['errors']}{COLOR_RESET}" )
         print( "--------------------------" )
         if exit_code != 0:
-            if args.check: print( "Check finished; some files require action or are unsupported." )
-            else: print( "Processing finished with one or more errors or unsupported files." )
-        elif not args.debug: print( "Processing completed successfully." )
+            if args.check: print( "{COLOR_DEBUG}check finished; some files require action or are unsupported{COLOR_RESET}" )
+            else: print( "{COLOR_DEBUG}processing finished with one or more errors or unsupported files{COLOR_RESET}" )
+        elif not args.debug: print( "{COLOR_GREEN_I}processing completed successfully{COLOR_RESET}" )
 
     sys.exit( exit_code )
 

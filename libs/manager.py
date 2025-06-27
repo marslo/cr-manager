@@ -6,45 +6,43 @@ import textwrap
 import re
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Set
+from .helper import COLOR_RESET, COLOR_YELLOW, COLOR_PURPLE, COLOR_DEBUG, COLOR_CYAN, COLOR_RED, COLOR_GRAY_I, COLOR_PURPLE_I, COLOR_DEBUG_I, COLOR_RED_I, COLOR_YELLOW_I, COLOR_RED_I
 
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
 
-COLOR_GRAY  = "\x1b[0;37;3m"
-COLOR_RESET = "\x1b[0m"
-
 FILE_TYPE_MAP = {
-    "hash_comment": {
-        "filetypes": {"python", "shell", "bash", "sh", "dockerfile"},
-        "suffixes": {".sh", ".py", ".dockerfile"},
-        "config": {
-            "start_line": "",
-            "end_line": "",
-            "comment_string": "#",
-            "box_char": "=",
-            "simple_format": False
+    'hash_comment': {
+        'filetypes' : { 'python', 'shell', 'bash', 'sh', 'dockerfile' },
+        'suffixes'  : { '.sh', '.py', '.dockerfile' },
+        'config'    : {
+            'start_line'     : '',
+            'end_line'       : '',
+            'comment_string' : '#',
+            'box_char'       : '=',
+            'simple_format'  : False
         }
     },
-    "groovy_style_comment": {
-        "filetypes": {"jenkinsfile", "groovy", "gradle", "java"},
-        "suffixes": {".groovy", ".java"},
-        "config": {
-            "start_line": "/**",
-            "end_line": "**/",
-            "comment_string": "* ",
-            "box_char": "*",
-            "simple_format": False
+    'groovy_style_comment': {
+        'filetypes' : { 'jenkinsfile', 'groovy', 'gradle', 'java' },
+        'suffixes'  : { '.groovy', '.java' },
+        'config'    : {
+            'start_line'     : '/**',
+            'end_line'       : '**/',
+            'comment_string' : '* ',
+            'box_char'       : '*',
+            'simple_format'  : False
         }
     },
-    "c_style_comment": {
-        "filetypes": {"c", "cpp", "c++", "cxx", "h", "hpp", "hxx"},
-        "suffixes": {".c", ".cpp", ".cxx", ".h", ".hpp", ".hxx"},
-        "config": {
-            "start_line": "/**",
-            "end_line": " */",
-            "comment_string": " * ",
-            "box_char": "*",
-            "simple_format": True
+    'c_style_comment': {
+        'filetypes' : { 'c', 'cpp', 'c++', 'cxx', 'h', 'hpp', 'hxx' },
+        'suffixes'  : { '.c', '.cpp', '.cxx', '.h', '.hpp', '.hxx' },
+        'config'    : {
+            'start_line'     : '/**',
+            'end_line'       : ' */',
+            'comment_string' : ' * ',
+            'box_char'       : '*',
+            'simple_format'  : True
         }
     }
 }
@@ -68,7 +66,7 @@ def _parse_modeline(content: str) -> Optional[str]:
     try:
         lines_to_check = content.splitlines()[-5:]
         for line in reversed( [line.strip() for line in lines_to_check if line.strip()] ):
-            if line.startswith( ("#", "//", "/*", "*") ) and ( match := modeline_pattern.search(line) ):
+            if line.startswith(( "#", "//", "/*", "*" )) and ( match := modeline_pattern.search(line) ):
                 return match.group(1).lower()
     except Exception:
         pass
@@ -81,7 +79,7 @@ def get_supported_filetypes() -> List[str]:
         all_ft.update( data.get("filetypes", set()) )
     return sorted( list(all_ft) )
 
-def detect_file_format(path: Path, filetype: Optional[str] = None) -> Optional[str]:
+def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional[str]:
     """
     Detects the file format.
     Priority order: 1. Forced filetype, 2. Vim modeline, 3. File suffix, 4. Content heuristics.
@@ -93,11 +91,11 @@ def detect_file_format(path: Path, filetype: Optional[str] = None) -> Optional[s
             if normalized_ft in data.get( "filetypes", set() ):
                 return fmt
 
-    def _safe_read(p: Path) -> Optional[str]:
+    def _safe_read( p: Path ) -> Optional[str]:
         try:
             return p.read_text( encoding='utf-8', errors='ignore' )
         except Exception as e:
-            print( f"Warning: Could not read file content from {p} for detection: {e}", file=sys.stderr )
+            print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Could not read file content from {COLOR_YELLOW_I}{p} {COLOR_DEBUG}for detection: {COLOR_PURPLE_I}{e}{COLOR_RESET}", file=sys.stderr )
             return None
 
     # 2. vim modeline (only if content was readable)
@@ -132,7 +130,7 @@ def detect_file_format(path: Path, filetype: Optional[str] = None) -> Optional[s
         for fmt, data in FILE_TYPE_MAP.items():
             if normalized_ft in data.get( "filetypes", set() ):
                 return fmt
-        print( f"Warning: Forced filetype '{filetype}' is not in the known configurations.", file=sys.stderr )
+        print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Forced filetype {COLOR_YELLOW_I}'{filetype}' {COLOR_DEBUG}is not in the known configurations.{COLOR_RESET}", file=sys.stderr )
 
 
     return None
@@ -148,7 +146,7 @@ def _preprocess_copyright_text( raw_text: str ) -> List[str]:
         if is_blank and prev_blank:
             continue
 
-        processed.append(stripped)
+        processed.append( stripped )
         prev_blank = is_blank
 
     while processed and not processed[0]:
@@ -162,7 +160,7 @@ def _preprocess_copyright_text( raw_text: str ) -> List[str]:
 class CopyrightManager:
     def __init__( self, copyright_path: Path ):
         """Initializes the manager with the path to the copyright template file."""
-        self.copyright_text = self._load_copyright(copyright_path)
+        self.copyright_text = self._load_copyright( copyright_path )
         self.supported_types = get_supported_filetypes()
         self.filetype_map: Dict[str, str] = {}
         self.suffix_map: Dict[str, str] = {}
@@ -176,13 +174,13 @@ class CopyrightManager:
         try:
             return path.read_text( encoding='utf-8' )
         except FileNotFoundError:
-            print( f"Error: Copyright file not found - {path}", file=sys.stderr )
+            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Copyright file not found - {COLOR_PURPLE_I}{path}{COLOR_RESET}", file=sys.stderr )
             sys.exit(2)
         except Exception as e:
-            print( f"Error: Failed to read copyright file {path} - {e}", file=sys.stderr )
+            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to read copyright file {COLOR_PURPLE_I}{path}{COLOR_RESET} - {e}", file=sys.stderr )
             sys.exit(3)
 
-    def _get_format_from_filetype(self, filetype: str) -> Optional[str]:
+    def _get_format_from_filetype( self, filetype: str ) -> Optional[str]:
         """Utility to get format key from a filetype string."""
         normalized_ft = filetype.lower()
         for fmt, data in FILE_TYPE_MAP.items():
@@ -194,21 +192,25 @@ class CopyrightManager:
         """Generates the formatted copyright string for a specific file or filetype."""
         fmt = None
         if forced_filetype and not path:
-             fmt = self._get_format_from_filetype( forced_filetype )
+            fmt = self._get_format_from_filetype( forced_filetype )
         elif path and path.is_file():
             fmt = detect_file_format( path, forced_filetype )
         else:
             if not path:
-                 print( f"Error: A file path or a filetype must be provided.", file=sys.stderr )
+                print( f"{COLOR_PURPLE}ERROR: {COLOR_DEBUG_I}a file path or a filetype must be provided{COLOR_RESET}", file=sys.stderr )
             else:
-                 print( f"Error: Target is not a valid file - {path}", file=sys.stderr )
+                print( f"{COLOR_PURPLE}ERROR: {COLOR_DEBUG_I}target is not a valid file - {COLOR_RED_I}{path}{COLOR_RESET}", file=sys.stderr )
             return None
 
         if fmt:
             return self._format_copyright( fmt )
         else:
-            target = f"type '{forced_filetype}'" if forced_filetype else f"file '{path}'"
-            print( f"Info: Could not determine a supported format for {target}", file=sys.stderr )
+            target = f"type {COLOR_PURPLE_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_PURPLE_I}'{path}'"
+            print( f"{COLOR_CYAN}INFO: {COLOR_DEBUG_I}could not determine a supported format for {target}{COLOR_RESET}", file=sys.stderr )
+            supported_ft_list = get_supported_filetypes()
+            if supported_ft_list:
+                hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_PURPLE_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
+                print( hint, file=sys.stderr )
             return None
 
     def _format_copyright_content_lines( self, fmt: str, bordered: bool ) -> List[str]:
@@ -218,7 +220,7 @@ class CopyrightManager:
         processed_text_lines = _preprocess_copyright_text( self.copyright_text )
         content_lines = []
 
-        if not bordered:              # simple format content
+        if not bordered:      # simple format content
             line_prefix = comment_string.rstrip() + " "
             wrap_width = max( 10, LINE_LENGTH - len(line_prefix) )
             for line in processed_text_lines:
@@ -228,9 +230,14 @@ class CopyrightManager:
                     wrapped = textwrap.wrap( line, width=wrap_width, replace_whitespace=False, drop_whitespace=False )
                     for part in wrapped:
                         content_lines.append( f"{line_prefix}{part}" )
-        else:                         # bordered format content
-            left_content = " " + comment_string.strip() + " "
-            right_content = " " + comment_string.strip()
+        else:                 # bordered format content
+            if config.get( "start_line" ):
+                left_content  = ' ' + comment_string.strip() + ' '
+                right_content = ' ' + comment_string.strip()
+            else:
+                left_content  = comment_string + " "
+                right_content = ' ' + comment_string
+
             text_width = max(0, LINE_LENGTH - len(left_content) - len(right_content))
             for line in processed_text_lines:
                 wrapped = textwrap.wrap( line, width=text_width, replace_whitespace=False, drop_whitespace=False ) if line else [""]
@@ -252,7 +259,7 @@ class CopyrightManager:
 
         if simple_format:
             full_block.extend( self._format_copyright_content_lines(fmt, bordered=False) )
-        else:                         # bordered format
+        else:                 # bordered format
             box_char = config.get( "box_char", "=" )
             comment_string = config.get( "comment_string", "#" )
             left_border_prefix = " " if start_line else comment_string
@@ -346,7 +353,7 @@ class CopyrightManager:
                     block_start = i
                 if in_block and end_pat.search( stripped_line ):
                     return block_start, i
-        else:                         # line comment
+        else:                 # line comment
             comment_pat = re.compile( r"^\s*" + re.escape(comment_string.strip()) )
             for i in range( search_start_idx, len(lines) ):
                 line = lines[i]
@@ -427,14 +434,14 @@ class CopyrightManager:
             if debug:
                 header = f"\n--- DEBUG PREVIEW: DELETE from {path} ---\n" if verbose else "\n"
                 footer = "\n--- END PREVIEW ---" if verbose else ""
-                print( f"{header}{COLOR_GRAY}{final_content}{COLOR_RESET}{footer}", end="" )
+                print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_deleted"
 
             path.write_text( final_content, encoding='utf-8' )
             return True, "deleted"
 
-        except FileNotFoundError: return False, f"error: {path} not found"
-        except Exception as e: return False, f"error: {e}"
+        except FileNotFoundError: return False, f"{COLOR_RED}ERROR: {COLOR_PURPLE_I}{path} {COLOR_DEBUG_I}not found{COLOR_RESET}"
+        except Exception as e: return False, f"ERROR: {e}"
 
     def check_copyright_status( self, path: Path, forced_type: Optional[str] = None ) -> Tuple[bool, str]:
         """Checks copyright status. Returns: 'match', 'mismatch', 'not_found', etc."""
@@ -492,7 +499,7 @@ class CopyrightManager:
         if debug:
             header = f"\n--- DEBUG PREVIEW: ADD to {path} ---\n" if verbose else "\n"
             footer = "\n--- END PREVIEW ---" if verbose else ""
-            print( f"{header}{COLOR_GRAY}{final_content}{COLOR_RESET}{footer}", end="" )
+            print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
             return True, "debug_added"
 
         path.write_text( final_content, encoding='utf-8' )
@@ -532,13 +539,13 @@ class CopyrightManager:
                     insert_pos = block_start + 1
                     separator = [ config["comment_string"].rstrip() ]
                     new_lines = lines[:insert_pos] + new_content_lines + separator + lines[insert_pos:]
-            else:                     # bordered format logic
+            else:             # bordered format logic
                 border_start, border_end = self._find_bordered_section( lines, block_start, block_end, fmt )
 
                 if border_start != -1 and border_end != -1:
                     new_content = self._format_copyright_content_lines( fmt, bordered=True )
                     new_lines = lines[:border_start + 1] + new_content + lines[border_end:]
-                else:                 # fallback
+                else:         # fallback
                     new_formatted_lines = self._format_copyright_as_list( fmt )
                     new_lines = lines[:block_start] + new_formatted_lines + lines[block_end + 1:]
 
@@ -550,7 +557,7 @@ class CopyrightManager:
             if debug:
                 header = f"\n--- DEBUG PREVIEW: UPDATE for {path} ---\n" if verbose else "\n"
                 footer = "\n--- END PREVIEW ---" if verbose else ""
-                print( f"{header}{COLOR_GRAY}{final_content}{COLOR_RESET}{footer}", end="" )
+                print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_updated"
 
             path.write_text( final_content, encoding='utf-8' )
