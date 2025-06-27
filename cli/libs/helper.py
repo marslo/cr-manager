@@ -8,26 +8,26 @@ import re
 import shutil
 
 # ====================== ANSI COLOR CONFIGURATION ======================
-COLOR_RESET    = "\x1b[0m"
-COLOR_BOLD     = "\x1b[0;1m"
+COLOR_RESET     = "\x1b[0m"
+COLOR_BOLD      = "\x1b[0;1m"
 
-COLOR_RED      = "\x1b[0;31m"
-COLOR_GREEN    = "\x1b[0;32m"
-COLOR_YELLOW   = "\x1b[0;33m"
-COLOR_BLUE     = "\x1b[0;34m"
+COLOR_RED       = "\x1b[0;31m"
+COLOR_GREEN     = "\x1b[0;32m"
+COLOR_YELLOW    = "\x1b[0;33m"
+COLOR_BLUE      = "\x1b[0;34m"
 COLOR_MAGENTA   = "\x1b[0;35m"
-COLOR_CYAN     = "\x1b[0;36m"
-COLOR_GRAY     = "\x1b[0;37m"
-COLOR_DEBUG    = "\x1b[0;37m"
+COLOR_CYAN      = "\x1b[0;36m"
+COLOR_GRAY      = "\x1b[0;37m"
+COLOR_DEBUG     = "\x1b[0;37;2m"
 
-COLOR_RED_I    = "\x1b[0;31;3m"
-COLOR_GREEN_I  = "\x1b[0;32;3m"
-COLOR_YELLOW_I = "\x1b[0;33;3m"
-COLOR_BLUE_I   = "\x1b[0;34;3m"
-COLOR_CYAN_I   = "\x1b[0;36;3m"
+COLOR_RED_I     = "\x1b[0;31;3m"
+COLOR_GREEN_I   = "\x1b[0;32;3m"
+COLOR_YELLOW_I  = "\x1b[0;33;3m"
+COLOR_BLUE_I    = "\x1b[0;34;3m"
+COLOR_CYAN_I    = "\x1b[0;36;3m"
 COLOR_MAGENTA_I = "\x1b[0;35;3m"
-COLOR_GRAY_I   = "\x1b[0;37;3m"
-COLOR_DEBUG_I  = "\x1b[0;37;2;3m"
+COLOR_GRAY_I    = "\x1b[0;37;3m"
+COLOR_DEBUG_I   = "\x1b[0;37;2;3m"
 
 # ====================== UTILITY CLASS ======================
 class ColorHelpFormatter( argparse.HelpFormatter ):
