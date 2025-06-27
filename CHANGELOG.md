@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/marslo/cr-manager/compare/v2.0.0...v2.0.1) (2025-06-27)
+
+
+### Bug Fixes
+
+* **exit_code,check:** set exit_code to 0 for check mode; and update readme ([5bb5368](https://github.com/marslo/cr-manager/commit/5bb5368d90a48d1fbf6bd7170819c67585e37d10))
+
 # [2.0.0](https://github.com/marslo/cr-manager/compare/v1.1.0...v2.0.0) (2025-06-27)
 
 
