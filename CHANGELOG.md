@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/marslo/cr-manager/compare/v2.0.1...v2.0.2) (2025-06-27)
+
+
+### Bug Fixes
+
+* **update:** fix the `--update` logic for combined copyright comment block; enhance the `--delete --debug` output ([3936a2d](https://github.com/marslo/cr-manager/commit/3936a2db66f163759ba5daf82d93632e0873cee8)), closes [#1](https://github.com/marslo/cr-manager/issues/1) [#2](https://github.com/marslo/cr-manager/issues/2)
+
 ## [2.0.1](https://github.com/marslo/cr-manager/compare/v2.0.0...v2.0.1) (2025-06-27)
 
 
