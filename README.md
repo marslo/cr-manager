@@ -63,7 +63,19 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ---
 
+## Action Modes
+
+> [!TIP]
+> without any action mode specified, the default action is to **add** copyright headers.
+
+| OPTION     | DESCRIPTION                                                                 |
+| ---------- | --------------------------------------------------------------------------- |
+| `--check`  | Check mode: Verifies file copyright status (match, mismatch, or not found). |
+| `--delete` | Delete mode: Removes detected copyright headers from files.                 |
+| `--update` | Update mode: Forces replacement of copyright or adds it if missing.         |
+
 ## Usage
+
 ### add new copyright headers
 ```bash
 # single file
@@ -124,11 +136,11 @@ $ python crm.py --filetype cpp
 
 ### help message
 ```bash
-$ python crm.py --help
+$ python3 -m cli.crm -h
 USAGE
-  crm.py [--check | --delete | --update] [--copyright-file FILE] [--filetype TYPE] [--recursive]
-         [--debug] [--verbose] [--help] [--version]
-         [FILES ...]
+  python -m cli.crm [--check | --delete | --update] [--copyright FILE] [--filetype TYPE] [--recursive]
+                    [--debug] [--verbose] [--help] [--version]
+                    [FILES ...]
 
 A tool to automatically add, update, or delete multi-format copyright headers.
 
@@ -141,35 +153,14 @@ ACTION MODES (default is add):
   --update                  Update mode: Forces replacement of copyright or adds it if missing.
 
 OPTIONS:
-  --copyright-file FILE     Specify the copyright template file path (default: COPYRIGHT).
-  --filetype TYPE           Force a filetype to override auto-detection (e.g., 'python', 'java'). If
-                            provided alone, displays a formatted preview for that type.
+  --copyright FILE          Specify the copyright template file path (default: COPYRIGHT).
+  --filetype -t TYPE        Force a filetype to override auto-detection. If provided alone, displays a
+                            formatted preview for that type. Supported: bash, c, c++, cpp, cxx,
+                            dockerfile, gradle, groovy, h, hpp, hxx, java, jenkinsfile, python, sh,
+                            shell
   --recursive -r            If FILES includes directories, process their contents recursively.
   --debug -d                Debug mode: Preview the result of an action without modifying files.
   --verbose -v              Show a detailed processing summary.
   --help -h                 Show this help message and exit.
   --version                 Show program's version number and exit.
 ```
-
-### Action Modes
-
-> [!TIP]
-> without any action mode specified, the default action is to **add** copyright headers.
-
-| OPTION     | DESCRIPTION                                                                 |
-| ---------- | --------------------------------------------------------------------------- |
-| `--check`  | Check mode: Verifies file copyright status (match, mismatch, or not found). |
-| `--delete` | Delete mode: Removes detected copyright headers from files.                 |
-| `--update` | Update mode: Forces replacement of copyright or adds it if missing.         |
-
-### OPTIONS
-
-| OPTION                  | DESCRIPTION                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `--copyright-file FILE` | Specify the copyright template file path (default: `COPYRIGHT`).                                                                     |
-| `--filetype TYPE`       | Force a filetype to override auto-detection (e.g., `python`, `java`). If provided alone, displays a formatted preview for that type. |
-| `--recursive`, `-r`     | If FILES includes directories, process their contents recursively.                                                                   |
-| `--debug`               | Debug mode: Preview the result of an action without modifying files.                                                                 |
-| `-v`, `--verbose`       | Show a detailed processing summary.                                                                                                  |
-| `-h`, `--help`          | Show help message and exit.                                                                                                          |
-| `--version`             | Show program's version number and exit.                                                                                              |
