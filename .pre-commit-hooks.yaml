@@ -1,9 +1,11 @@
----
 # .pre-commit-hooks.yaml
+# yamllint disable rule:indentation
+---
 -   id: cr-manager
-    name: Add and Update Copyright
-    description: This hook updates the copyright information in specified files.
+    name: Update Copyright Headers
+    description: Adds, updates, or checks copyright headers using the cr-manager tool.
     entry: cr-manager
     language: python
+    language_version: python3
     files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx)$)'
     args: ["--update"]

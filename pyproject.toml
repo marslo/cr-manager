@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cr-manager"
-version = "3.0.0"
-description = "A tool to automatically add, update, or delete multi-format copyright headers"
+version = "2.0.0"
+description = "Tool to automatically add, update, or delete multi-format copyright headers"
 
 [project.scripts]
 cr-manager = "cli.crm:main"

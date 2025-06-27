@@ -136,7 +136,7 @@ $ python crm.py --filetype cpp
 
 ### help message
 ```bash
-$ python -m cli.crm --help
+$ python3 -m cli.crm -h
 USAGE
   python -m cli.crm [--check | --delete | --update] [--copyright FILE] [--filetype TYPE] [--recursive]
                     [--debug] [--verbose] [--help] [--version]
@@ -154,8 +154,10 @@ ACTION MODES (default is add):
 
 OPTIONS:
   --copyright FILE          Specify the copyright template file path (default: COPYRIGHT).
-  --filetype -t TYPE        Force a filetype to override auto-detection (e.g., 'python', 'java'). If
-                            provided alone, displays a formatted preview for that type.
+  --filetype -t TYPE        Force a filetype to override auto-detection. If provided alone, displays a
+                            formatted preview for that type. Supported: bash, c, c++, cpp, cxx,
+                            dockerfile, gradle, groovy, h, hpp, hxx, java, jenkinsfile, python, sh,
+                            shell
   --recursive -r            If FILES includes directories, process their contents recursively.
   --debug -d                Debug mode: Preview the result of an action without modifying files.
   --verbose -v              Show a detailed processing summary.

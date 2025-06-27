@@ -10,11 +10,12 @@ try:
     from .libs.helper import (
         ColorHelpFormatter,
         COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN,
-        COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_DEBUG_I,
-        COLOR_PURPLE_I, COLOR_CYAN_I, COLOR_GREEN_I, COLOR_RED_I,
-        COLOR_YELLOW_I, COLOR_BLUE_I,
+        COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_RED,
+        COLOR_DEBUG_I, COLOR_MAGENTA_I, COLOR_CYAN_I, COLOR_GREEN_I,
+        COLOR_RED_I, COLOR_YELLOW_I, COLOR_BLUE_I,
     )
-    from .libs.manager import CopyrightManager
+    # MODIFICATION: Import the specific function needed for the help message.
+    from .libs.manager import CopyrightManager, get_supported_filetypes
 except ImportError as e:
     print( f"Error: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
@@ -22,10 +23,19 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
-VERSION = "v2.0"
+VERSION = "v2.1.0"
 
 def main():
     """Main function to handle command-line arguments and process files."""
+
+    # --- ENHANCEMENT START ---
+    # Dynamically get the list of supported filetypes to embed in the help message.
+    try:
+        supported_types_str = ', '.join(get_supported_filetypes())
+    except Exception:
+        supported_types_str = "[Could not load supported types]"
+    # --- ENHANCEMENT END ---
+
     parser = argparse.ArgumentParser(
         prog='python -m cli.crm',
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
@@ -41,7 +51,7 @@ def main():
     # positional arguments
     pos_group.add_argument(
         'files',
-        nargs='*',                 # allows zero or more files
+        nargs='*',                # allows zero or more files
         metavar='FILES',
         help='List of target files or directories to process.'
     )
@@ -53,8 +63,9 @@ def main():
     action.add_argument( '--update' , action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
 
     # optional arguments
-    option_group.add_argument( '--copyright'       , metavar='FILE'      , type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {DEFAULT_COPYRIGHT_FILE}).' )
-    option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help="Force a filetype to override auto-detection (e.g., 'python', 'java').\nIf provided alone, displays a formatted preview for that type." )
+    option_group.add_argument( '--copyright'       , metavar='FILE'      , type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {COLOR_MAGENTA_I}{DEFAULT_COPYRIGHT_FILE}{COLOR_RESET}).' )
+    option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help=f"Force a filetype to override auto-detection.\nIf provided alone, displays a formatted preview for that type. "
+                                                                                f"Supported: {COLOR_MAGENTA_I}{supported_types_str}{COLOR_RESET}" )
     option_group.add_argument( '--recursive', '-r' , action='store_true' , help='If FILES includes directories, process their contents recursively.' )
     option_group.add_argument( '--debug',     '-d' , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
     option_group.add_argument( '--verbose',   '-v' , action='store_true' , help='Show a detailed processing summary.' )
@@ -70,8 +81,11 @@ def main():
         sys.exit( e.code )
 
     # handle the special case where only --filetype is provided for a format preview
-    is_action_mode = args.check or args.delete or args.update
+    is_action_mode = args.check or args.delete or args.update or args.debug # <-- MODIFIED: Added --debug to this check
     if args.filetype and not args.files and not is_action_mode:
+        if args.verbose:
+            print( f"{COLOR_DEBUG_I}INFO: Entering format preview mode (since only --filetype was provided)...{COLOR_RESET}", file=sys.stderr )
+
         formatted = manager.format_for_file( forced_filetype=args.filetype )
         if formatted:
             if args.verbose: print( f"{COLOR_DEBUG_I}--- Copyright Format Preview ({COLOR_DEBUG}{args.filetype}{COLOR_DEBUG_I}) ---{COLOR_RESET}" )
@@ -79,11 +93,12 @@ def main():
             if args.verbose: print( f"{COLOR_DEBUG_I}--- End of Preview ---{COLOR_RESET}" )
             sys.exit(0)
         else:
+            # The manager's format_for_file method already prints detailed errors, so we just exit.
             sys.exit(1)
 
     # validate that files are provided for standard operation modes
     if not args.files:
-        parser.error( "At least one target file or directory is required for this operation. Use --filetype <type> for format preview, or -h for help." )
+        parser.error( f"\n{COLOR_RED}ERROR:{COLOR_RESET} At least one target file or directory is required for this operation. Use {COLOR_YELLOW}--filetype {COLOR_CYAN}<type>{COLOR_RESET} for format preview, or {COLOR_YELLOW}-h{COLOR_RESET} for help" )
 
     # collect all files to be processed
     files_to_process: List[Path] = []
@@ -111,16 +126,18 @@ def main():
     exit_code = 0
     stats = { "processed": 0, "skipped": 0, "updated": 0, "added": 0, "deleted": 0, "errors": 0, "debug": 0 }
     forced_type = args.filetype.lower() if args.filetype else None
-    supported_types_str = ', '.join(manager.supported_types)
+
+    # Note: `supported_types_str` is already defined at the top of main()
+    # It is used here in the error message for unsupported formats.
 
     for path in files_to_process:
         stats["processed"] += 1
         # print( f"[{stats['processed']}/{len(files_to_process)}] Processing: {path} ... ", end="" )
         print( f"{COLOR_DEBUG_I}>> "
-               f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
-               f"{COLOR_YELLOW}{len(files_to_process)}"
-               f"{COLOR_PURPLE_I} {path} "
-               f"{COLOR_DEBUG_I}... {COLOR_RESET}",
+                f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
+                f"{COLOR_YELLOW}{len(files_to_process)}"
+                f"{COLOR_MAGENTA_I} {path} "
+                f"{COLOR_DEBUG_I}... {COLOR_RESET}",
               end=""
              )
 
@@ -152,7 +169,7 @@ def main():
                     elif msg == "inserted": print( f"{COLOR_GREEN}ADDED{COLOR_RESET}" ); stats["added"] += 1
                 else: raise ValueError( msg )
 
-            else:                  # default action: add
+            else:                       # default action: add
                 success, msg = manager.add_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
                 if msg.startswith( "debug" ):
                     if args.verbose: print( f"Status: Dry-run add preview shown" )
@@ -191,7 +208,7 @@ def main():
             print( f"{COLOR_DEBUG}UPDATED : {COLOR_CYAN_I}{stats['updated']}{COLOR_RESET}" );
             print( f"{COLOR_DEBUG}DELETED : {COLOR_RED_I}{stats['deleted']}{COLOR_RESET}" );
             print( f"{COLOR_DEBUG}SKIPPED : {COLOR_YELLOW_I}{stats['skipped']}{COLOR_RESET}" )
-        print( f"{COLOR_DEBUG}ERRORS/UNSUPPORTED: {COLOR_PURPLE_I}{stats['errors']}{COLOR_RESET}" )
+        print( f"{COLOR_DEBUG}ERRORS/UNSUPPORTED: {COLOR_MAGENTA_I}{stats['errors']}{COLOR_RESET}" )
         print( "--------------------------" )
         if exit_code != 0:
             if args.check: print( "{COLOR_DEBUG}check finished; some files require action or are unsupported{COLOR_RESET}" )

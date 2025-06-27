@@ -6,7 +6,7 @@ import textwrap
 import re
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Set
-from .helper import COLOR_RESET, COLOR_YELLOW, COLOR_PURPLE, COLOR_DEBUG, COLOR_CYAN, COLOR_RED, COLOR_GRAY_I, COLOR_PURPLE_I, COLOR_DEBUG_I, COLOR_RED_I, COLOR_YELLOW_I, COLOR_RED_I
+from .helper import COLOR_RESET, COLOR_YELLOW, COLOR_MAGENTA, COLOR_DEBUG, COLOR_CYAN, COLOR_RED, COLOR_GRAY_I, COLOR_MAGENTA_I, COLOR_DEBUG_I, COLOR_RED_I, COLOR_YELLOW_I, COLOR_RED_I
 
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
@@ -95,7 +95,7 @@ def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional
         try:
             return p.read_text( encoding='utf-8', errors='ignore' )
         except Exception as e:
-            print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Could not read file content from {COLOR_YELLOW_I}{p} {COLOR_DEBUG}for detection: {COLOR_PURPLE_I}{e}{COLOR_RESET}", file=sys.stderr )
+            print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Could not read file content from {COLOR_YELLOW_I}{p} {COLOR_DEBUG}for detection: {COLOR_MAGENTA_I}{e}{COLOR_RESET}", file=sys.stderr )
             return None
 
     # 2. vim modeline (only if content was readable)
@@ -174,10 +174,10 @@ class CopyrightManager:
         try:
             return path.read_text( encoding='utf-8' )
         except FileNotFoundError:
-            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Copyright file not found - {COLOR_PURPLE_I}{path}{COLOR_RESET}", file=sys.stderr )
+            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Copyright file not found - {COLOR_MAGENTA_I}{path}{COLOR_RESET}", file=sys.stderr )
             sys.exit(2)
         except Exception as e:
-            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to read copyright file {COLOR_PURPLE_I}{path}{COLOR_RESET} - {e}", file=sys.stderr )
+            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to read copyright file {COLOR_MAGENTA_I}{path}{COLOR_RESET} - {e}", file=sys.stderr )
             sys.exit(3)
 
     def _get_format_from_filetype( self, filetype: str ) -> Optional[str]:
@@ -197,19 +197,19 @@ class CopyrightManager:
             fmt = detect_file_format( path, forced_filetype )
         else:
             if not path:
-                print( f"{COLOR_PURPLE}ERROR: {COLOR_DEBUG_I}a file path or a filetype must be provided{COLOR_RESET}", file=sys.stderr )
+                print( f"{COLOR_MAGENTA}ERROR: {COLOR_DEBUG_I}a file path or a filetype must be provided{COLOR_RESET}", file=sys.stderr )
             else:
-                print( f"{COLOR_PURPLE}ERROR: {COLOR_DEBUG_I}target is not a valid file - {COLOR_RED_I}{path}{COLOR_RESET}", file=sys.stderr )
+                print( f"{COLOR_MAGENTA}ERROR: {COLOR_DEBUG_I}target is not a valid file - {COLOR_RED_I}{path}{COLOR_RESET}", file=sys.stderr )
             return None
 
         if fmt:
             return self._format_copyright( fmt )
         else:
-            target = f"type {COLOR_PURPLE_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_PURPLE_I}'{path}'"
+            target = f"type {COLOR_MAGENTA_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_MAGENTA_I}'{path}'"
             print( f"{COLOR_CYAN}INFO: {COLOR_DEBUG_I}could not determine a supported format for {target}{COLOR_RESET}", file=sys.stderr )
             supported_ft_list = get_supported_filetypes()
             if supported_ft_list:
-                hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_PURPLE_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
+                hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_MAGENTA_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
                 print( hint, file=sys.stderr )
             return None
 
@@ -432,7 +432,7 @@ class CopyrightManager:
                     final_content += '\n'
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: DELETE from {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: DELETE from {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
                 print( f"{header}{COLOR_GRAY_I}{final_content}{COLOR_RESET}{footer}", end="" )
                 return True, "debug_deleted"
@@ -440,7 +440,7 @@ class CopyrightManager:
             path.write_text( final_content, encoding='utf-8' )
             return True, "deleted"
 
-        except FileNotFoundError: return False, f"{COLOR_RED}ERROR: {COLOR_PURPLE_I}{path} {COLOR_DEBUG_I}not found{COLOR_RESET}"
+        except FileNotFoundError: return False, f"{COLOR_RED}ERROR: {COLOR_MAGENTA_I}{path} {COLOR_DEBUG_I}not found{COLOR_RESET}"
         except Exception as e: return False, f"ERROR: {e}"
 
     def check_copyright_status( self, path: Path, forced_type: Optional[str] = None ) -> Tuple[bool, str]:
@@ -497,7 +497,7 @@ class CopyrightManager:
                 final_content += '\n'
 
         if debug:
-            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: ADD to {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: ADD to {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
             footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
             debug_output = '\n'.join(formatted_lines)
             print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="" )
@@ -532,7 +532,7 @@ class CopyrightManager:
                 if not final_content.endswith('\n'): final_content += '\n'
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: UPDATE for {COLOR_PURPLE}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: UPDATE for {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
                 debug_output = '\n'.join(new_formatted_lines)
                 print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="" )
