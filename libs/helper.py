@@ -5,6 +5,7 @@ help messages in the command-line interface.
 """
 import argparse
 import re
+import shutil
 
 # ====================== ANSI COLOR CONFIGURATION ======================
 COLOR_RESET    = "\x1b[0m"
@@ -37,10 +38,16 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
 
     def __init__(self, prog):
         """Initializes the formatter with specific width and indentation settings."""
+        # Get terminal width dynamically, with a fallback to 120.
+        try:
+            width = shutil.get_terminal_size(fallback=(120, 24)).columns
+        except Exception:
+            width = 120 # Final fallback in case of any error.
+
         super().__init__(
             prog,
             max_help_position=40,
-            width=90,
+            width=width,
             indent_increment=2
         )
         self._action_max_length = self._max_help_position
