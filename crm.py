@@ -17,11 +17,12 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
+VERSION = "v2.0"
 
 def main():
     """Main function to handle command-line arguments and process files."""
     parser = argparse.ArgumentParser(
-        prog='$ python3 crm.py',
+        prog='crm.py',
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
         formatter_class=ColorHelpFormatter,
         add_help=False
@@ -29,7 +30,7 @@ def main():
 
     # argument groups for better help output organization
     pos_group    = parser.add_argument_group( COLOR_BOLD + 'POSITIONAL ARGUMENTS' + COLOR_RESET )
-    action_group = parser.add_argument_group( COLOR_BOLD + 'ACTION MODES (choose one, default is add)' + COLOR_RESET )
+    action_group = parser.add_argument_group( COLOR_BOLD + 'ACTION MODES (default is add)' + COLOR_RESET )
     option_group = parser.add_argument_group( COLOR_BOLD + 'OPTIONS' + COLOR_RESET )
 
     # positional arguments
@@ -42,24 +43,24 @@ def main():
 
     # action modes (mutually exclusive)
     action = action_group.add_mutually_exclusive_group()
-    action.add_argument( '--check', action='store_true', help='Check mode: Verifies file copyright status (match, mismatch, or not found).' )
-    action.add_argument( '--delete', action='store_true', help='Delete mode: Removes detected copyright headers from files.' )
-    action.add_argument( '--update', action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
+    action.add_argument( '--check'  , action='store_true', help='Check mode: Verifies file copyright status (match, mismatch, or not found).' )
+    action.add_argument( '--delete' , action='store_true', help='Delete mode: Removes detected copyright headers from files.' )
+    action.add_argument( '--update' , action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
 
     # optional arguments
-    option_group.add_argument( '--copyright-file', metavar='FILE', type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {DEFAULT_COPYRIGHT_FILE}).' )
-    option_group.add_argument( '--filetype', metavar='TYPE', help="Force a filetype to override auto-detection (e.g., 'python', 'java').\nIf provided alone, displays a formatted preview for that type." )
-    option_group.add_argument( '--recursive', '-r', action='store_true', help='If FILES includes directories, process their contents recursively.' )
-    option_group.add_argument( '--debug', action='store_true', help='Debug mode: Preview the result of an action without modifying files.' )
-    option_group.add_argument( '-v', '--verbose', action='store_true', help='Show a detailed processing summary.' )
-    option_group.add_argument( '-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.' )
-    option_group.add_argument( '--version', action='version', version='%(prog)s 2.0', help="Show program's version number and exit." )
+    option_group.add_argument( '--copyright'       , metavar='FILE'      , type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {DEFAULT_COPYRIGHT_FILE}).' )
+    option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help="Force a filetype to override auto-detection (e.g., 'python', 'java').\nIf provided alone, displays a formatted preview for that type." )
+    option_group.add_argument( '--recursive', '-r' , action='store_true' , help='If FILES includes directories, process their contents recursively.' )
+    option_group.add_argument( '--debug',     '-d' , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
+    option_group.add_argument( '--verbose',   '-v' , action='store_true' , help='Show a detailed processing summary.' )
+    option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
+    option_group.add_argument( '--version'         , action='version'    , version=f"%(prog)s - cr-manager {VERSION}", help="Show program's version number and exit." )
 
     args = parser.parse_args()
 
     # initialize copyright manager
     try:
-        manager = CopyrightManager( args.copyright_file )
+        manager = CopyrightManager( args.copyright )
     except SystemExit as e:
         sys.exit( e.code )
 

@@ -42,11 +42,11 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         try:
             width = shutil.get_terminal_size(fallback=(120, 24)).columns
         except Exception:
-            width = 120 # Final fallback in case of any error.
+            width = 120
 
         super().__init__(
             prog,
-            max_help_position=40,
+            max_help_position=26,
             width=width,
             indent_increment=2
         )
