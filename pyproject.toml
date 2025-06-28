@@ -1,15 +1,24 @@
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "cr-manager"
 version = "2.0.2"
 description = "Tool to automatically add, update, or delete multi-format copyright headers"
+authors = ["marslo <marslo.jiao@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "cli" }
+]
 
-[project.scripts]
+[tool.poetry.scripts]
 cr-manager = "cli.crm:main"
 
-[tool.setuptools.packages.find]
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
