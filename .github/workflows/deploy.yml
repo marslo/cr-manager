@@ -18,7 +18,9 @@ jobs:
     name: Build Standalone Executables
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # MODIFICATION 1: Use a specific, older LTS version for Linux to ensure glibc compatibility.
+        # macos-latest and windows-latest are generally okay for backward compatibility.
+        os: [ubuntu-22.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -34,15 +36,35 @@ jobs:
         run: python -m pip install poetry
 
       - name: Install dependencies
-        run: poetry install --without=dev --no-interaction
+        run: poetry install --no-interaction
 
       - name: Install PyInstaller
         run: python -m pip install pyinstaller
+
+      # UPX installation is optional and can be kept as is.
+      - name: Install UPX (Linux and Windows only)
+        if: runner.os == 'Linux' || runner.os == 'Windows'
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
 
       - name: Build with PyInstaller
         id: build-exe
         shell: bash
         run: |
+          # 1. Prepare the base PyInstaller command
+          # MODIFICATION 2: Add --hidden-import for wcwidth to ensure it's always included.
+          PYINSTALLER_CMD="pyinstaller --onefile --clean --hidden-import=wcwidth"
+
+          # 2. Add UPX flag only if running on Linux or Windows
+          if [[ "${{ runner.os }}" == "Linux" || "${{ runner.os }}" == "Windows" ]]; then
+            echo "UPX found, enabling compression."
+            PYINSTALLER_CMD+=" --upx-dir \"${{ env.UPX_DIR }}\""
+          else
+            echo "UPX not used on macOS."
+          fi
+
+          # 3. Determine the output name based on the OS
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             OUTPUT_NAME="cr-manager-linux"
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
@@ -50,13 +72,17 @@ jobs:
           elif [[ "${{ runner.os }}" == "Windows" ]]; then
             OUTPUT_NAME="cr-manager"
           fi
-          pyinstaller --name "$OUTPUT_NAME" --onefile --clean "${{ github.workspace }}/cli/crm.py"
+
+          # 4. Append the name and entrypoint to the command and execute
+          PYINSTALLER_CMD+=" --name \"$OUTPUT_NAME\" \"${{ github.workspace }}/main.py\""
+          echo "Executing: $PYINSTALLER_CMD"
+          eval "${PYINSTALLER_CMD}"
+
+          # 5. Set the output path for the upload step
           if [[ "${{ runner.os }}" == "Windows" ]]; then
             echo "ASSET_PATH=dist/${OUTPUT_NAME}.exe" >> "$GITHUB_OUTPUT"
-            echo "ASSET_NAME=${OUTPUT_NAME}.exe" >> "$GITHUB_OUTPUT"
           else
             echo "ASSET_PATH=dist/${OUTPUT_NAME}" >> "$GITHUB_OUTPUT"
-            echo "ASSET_NAME=${OUTPUT_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload Release Asset
@@ -65,4 +91,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          gh release upload "$RELEASE_TAG" "${{ steps.build-exe.outputs.ASSET_PATH }}#${{ steps.build-exe.outputs.ASSET_NAME }}" --clobber
+          gh release upload "$RELEASE_TAG" \
+             "${{ steps.build-exe.outputs.ASSET_PATH }}#${{ steps.build-exe.outputs.ASSET_NAME }}" \
+             --clobber
