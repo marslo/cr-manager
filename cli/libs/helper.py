@@ -52,6 +52,18 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         )
         self._action_max_length = self._max_help_position
 
+    def _format_args(self, action, default_metavar):
+        """
+        Overrides the default argument formatting to remove brackets from
+        optional positional arguments and respect the user-defined metavar.
+        """
+        if action.nargs == argparse.ZERO_OR_MORE:
+            metavar = action.metavar or default_metavar
+            return f'{metavar} ...'
+
+        # for all other cases, use the default implementation from the parent class.
+        return super()._format_args(action, default_metavar)
+
     # --- private colorization helpers ---
     @staticmethod
     def _colorize( text: str, color: str ) -> str:
@@ -77,7 +89,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
     @staticmethod
     def _strip_colors( text: str ) -> str:
         """Removes ANSI color codes from a string to measure its real length."""
-        return re.sub( r'\x1b\[[0-9;]*m', '', text )
+        return re.sub( r'\x1b\[(([0-9]+)(;[0-9]+)*)?[mGKHfJ]', '', text, flags=re.IGNORECASE )
 
     # --- section formatting overrides ---
     def add_usage( self, usage, actions, groups, prefix=None ):
@@ -86,21 +98,40 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
             prefix = self._bold("USAGE") + "\n"
         super().add_usage( usage, actions, groups, prefix )
 
-    def _format_usage( self, usage, actions, groups, prefix ):
+    def _format_usage( self, usage, actions, groups, _ ):
         """
-        Formats the usage block with custom indentation and alignment to ensure
-        long usage strings wrap correctly.
+        Formats the usage block to be compact and always show short and long options
+        in a [-s|--long] format.
         """
         # get the default formatted usage string, but without the "usage: " prefix
         usage_str = super()._format_usage( usage, actions, groups, prefix=None )
         usage_str = re.sub( r'^[Uu]sage:\s*', '', usage_str ).strip()
 
+        def get_combined_option(action_string):
+            """
+            Finds the action corresponding to a usage string (e.g., '[-v]')
+            and returns a combined string like '[-v | --version]'.
+            """
+            raw_opt = action_string.strip('[]')
+
+            for action in actions:
+                if raw_opt in action.option_strings:
+                    opts = action.option_strings
+                    if len(opts) == 1: return opts[0]
+                    sorted_opts = sorted(opts, key=len)
+                    return '|'.join(sorted_opts)
+
+            # if it's not an option string (e.g., a positional argument), return as is.
+            return action_string.strip()
+
+        # replace each optional argument in the usage string with its new combined form.
+        usage_str = re.sub(r'\[([^\[\]\s]+)\]', lambda m: f"[{get_combined_option(m.group(0))}]", usage_str)
+
         lines = usage_str.split('\n')
-        if not lines or not lines[0]:
-            return self._bold("USAGE") + "\n\n"
+        if not lines or not lines[0]: return self._bold("USAGE") + "\n\n"
 
         # indent the first line of the usage string slightly
-        line_2 = "  " + lines[0]
+        line_2 = '  ' + lines[0]
 
         # calculate alignment for subsequent lines based on the start of the arguments
         align_char_match = re.search( r'(\[|\b[A-Z]{2,})', line_2 )
@@ -132,28 +163,54 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
     def _format_action( self, action: argparse.Action ) -> str:
         """
         Formats a single action ( like '--help' ) and its help text, ensuring
-        proper alignment between the action and its description.
+        proper alignment and wrapping by correctly calculating the visible
+        width of strings containing ANSI color codes.
         """
-        # get the formatted action part, e.g., "-h, --help"
         parts = self._format_action_invocation( action )
+
         invoc_length = len( self._strip_colors(parts) )
         action_header = f"{'':<{self._current_indent}}{parts}"
 
-        # if there's no help text, just return the action
         help_text = self._expand_help( action )
-        if not help_text:
-            return action_header + "\n"
+        if not help_text: return action_header + '\n'
 
-        # calculate the starting column and width for the help text
         help_position = min( self._action_max_length + 2, self._max_help_position )
         help_start_col = self._current_indent + help_position
         padding = max( help_start_col - (self._current_indent + invoc_length), 2 )
         help_width = max( self._width - help_start_col, 10 )
 
-        # wrap the help text and combine it with the action header
-        help_lines = self._split_lines( help_text, help_width )
-        if not help_lines:
-            return action_header + "\n"
+        raw_lines = help_text.splitlines()
+        wrapped_lines = []
+
+        for line in raw_lines:
+            words = re.split(r'(\s+)', line)
+            current_line = ''
+            current_line_len = 0
+
+            for word in words:
+                word_clean_len = len(self._strip_colors(word))
+
+                # if the word itself is longer than the allowed width, just add it on its own line.
+                if word_clean_len > help_width:
+                    if current_line: wrapped_lines.append(current_line)
+                    wrapped_lines.append(word)
+                    current_line = ''
+                    current_line_len = 0
+                    continue
+
+                if current_line_len + word_clean_len > help_width:
+                    wrapped_lines.append(current_line)
+                    current_line = word
+                    current_line_len = word_clean_len
+                else:
+                    current_line += word
+                    current_line_len += word_clean_len
+
+            if current_line: wrapped_lines.append(current_line)
+
+        help_lines = [ line.strip() for line in wrapped_lines if line.strip() ]
+
+        if not help_lines: return action_header + '\n'
 
         first_help_line = f"{action_header}{' ' * padding}{help_lines[0]}"
         subsequent_lines = [ f"{' ' * help_start_col}{line}" for line in help_lines[1:] ]
@@ -167,16 +224,20 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
             metavar = self._format_args( action, action.dest.upper() )
             return self._cyan( metavar )
 
-        # for optional arguments like '--filetype type'
-        parts = [ self._yellow(s) for s in action.option_strings ]
+        # --- NEW, CORRECTED LOGIC ---
+        # 1. Join ONLY the option strings (e.g., -t, --filetype) with a comma.
+        option_names = [ self._yellow(s) for s in sorted(action.option_strings, key=len) ]
+        invocation = ', '.join(option_names)
+
+        # 2. If the action takes a value, append its metavar with a space.
         if action.nargs != 0:
             metavar = action.metavar or action.dest.upper()
             if metavar:
-                parts.append( self._magenta(metavar) )
+                invocation += f" {self._magenta(metavar)}" # Note the leading space
 
-        return ' '.join( parts )
+        return invocation
 
-# Note: _split_lines, _expand_help, and _format_args are inherited from
+# Note: _split_lines and _expand_help are inherited from
 # argparse.HelpFormatter and are used here for their default behaviors
 
 # vim:tabstop=4:softtabstop=4:shiftwidth=4:expandtab:filetype=python:

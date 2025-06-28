@@ -60,16 +60,16 @@ def main():
 
     # action modes (mutually exclusive)
     action = action_group.add_mutually_exclusive_group()
-    action.add_argument( '--check'  , action='store_true', help='Check mode: Verifies file copyright status (match, mismatch, or not found).' )
-    action.add_argument( '--delete' , action='store_true', help='Delete mode: Removes detected copyright headers from files.' )
-    action.add_argument( '--update' , action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
+    action.add_argument( '--check'  , '-c', action='store_true', help='Check mode: Verifies file copyright status (match, mismatch, or not found).' )
+    action.add_argument( '--delete' , '-d', action='store_true', help='Delete mode: Removes detected copyright headers from files.' )
+    action.add_argument( '--update' , '-u', action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
 
     # optional arguments
     option_group.add_argument( '--copyright'       , metavar='FILE'      , type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {COLOR_MAGENTA_I}{DEFAULT_COPYRIGHT_FILE}{COLOR_RESET}).' )
-    option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help=f"Force a filetype to override auto-detection.\nIf provided alone, displays a formatted preview for that type. "
+    option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help=f"Force override a filetype instead of auto-detection.\nIf provided, displays a formatted preview for that type. "
                                                                                 f"Supported: {COLOR_MAGENTA_I}{supported_types_str}{COLOR_RESET}" )
-    option_group.add_argument( '--recursive', '-r' , action='store_true' , help='If FILES includes directories, process their contents recursively.' )
-    option_group.add_argument( '--debug',     '-d' , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
+    option_group.add_argument( '--recursive', '-r' , action='store_true' , help=f"If {COLOR_CYAN_I}FILES{COLOR_RESET} includes directories, process their contents recursively." )
+    option_group.add_argument( '--debug'           , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
     option_group.add_argument( '--verbose'         , action='store_true' , help='Show a detailed processing summary.' )
     option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
     option_group.add_argument( '--version',   '-v' , action='version'    , version=f"cr-manager {app_version}", help="Show program's version number and exit." )
