@@ -10,15 +10,13 @@ import importlib.metadata
 try:
     from .libs.helper import (
         ColorHelpFormatter,
-        COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_CYAN, COLOR_MAGENTA,
-        COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_RED, COLOR_GRAY,
-        COLOR_DEBUG_I, COLOR_MAGENTA_I, COLOR_CYAN_I, COLOR_GREEN_I,
-        COLOR_RED_I, COLOR_YELLOW_I, COLOR_BLUE_I, COLOR_GRAY_I
+        COLOR_BOLD, COLOR_RESET, COLOR_DEBUG, COLOR_DEBUG_I,
+        COLOR_CYAN, COLOR_MAGENTA, COLOR_YELLOW, COLOR_GREEN, COLOR_BLUE, COLOR_RED, COLOR_GRAY,
+        COLOR_CYAN_I, COLOR_MAGENTA_I, COLOR_YELLOW_I, COLOR_GREEN_I, COLOR_BLUE_I, COLOR_RED_I
     )
-    # MODIFICATION: Import the specific function needed for the help message.
     from .libs.manager import CopyrightManager, get_supported_filetypes
 except ImportError as e:
-    print( f"{COLOR_RED}ERROR: {COLOR_GRAY_I}Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py.{COLOR_RESET}" )
+    print( f"ERROR: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
     sys.exit( 1 )
 
@@ -39,7 +37,7 @@ def main():
         app_version = "UNKNOWN (not installed)"
 
     parser = argparse.ArgumentParser(
-        prog='python -m cli.crm',
+        prog='python3 -m cli.crm',
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
         formatter_class=ColorHelpFormatter,
         add_help=False

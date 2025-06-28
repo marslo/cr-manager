@@ -6,6 +6,7 @@ help messages in the command-line interface.
 import argparse
 import re
 import shutil
+from wcwidth import wcswidth
 
 # ====================== ANSI COLOR CONFIGURATION ======================
 COLOR_RESET     = "\x1b[0m"
@@ -160,57 +161,61 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         """Formats argument group headings ( e.g., 'POSITIONAL ARGUMENTS' )."""
         return f"{heading}\n"
 
-    def _format_action( self, action: argparse.Action ) -> str:
+    def _wrap_colored_text(self, text: str, width: int) -> list[str]:
         """
-        Formats a single action ( like '--help' ) and its help text, ensuring
-        proper alignment and wrapping by correctly calculating the visible
-        width of strings containing ANSI color codes.
+        A color-aware text wrapper that correctly handles ANSI codes and wide characters.
         """
-        parts = self._format_action_invocation( action )
-
-        invoc_length = len( self._strip_colors(parts) )
-        action_header = f"{'':<{self._current_indent}}{parts}"
-
-        help_text = self._expand_help( action )
-        if not help_text: return action_header + '\n'
-
-        help_position = min( self._action_max_length + 2, self._max_help_position )
-        help_start_col = self._current_indent + help_position
-        padding = max( help_start_col - (self._current_indent + invoc_length), 2 )
-        help_width = max( self._width - help_start_col, 10 )
-
-        raw_lines = help_text.splitlines()
-        wrapped_lines = []
-
-        for line in raw_lines:
-            words = re.split(r'(\s+)', line)
-            current_line = ''
+        lines = []
+        # process each line separately to respect existing newlines
+        for line in text.splitlines():
+            words = re.split( r'(\s+)', line )
+            current_line = ""
             current_line_len = 0
 
             for word in words:
-                word_clean_len = len(self._strip_colors(word))
+                # use wcswidth on the stripped string for accurate display width calculation
+                word_clean_len = wcswidth( self._strip_colors(word) )
 
-                # if the word itself is longer than the allowed width, just add it on its own line.
-                if word_clean_len > help_width:
-                    if current_line: wrapped_lines.append(current_line)
-                    wrapped_lines.append(word)
+                if word_clean_len > width:
+                    if current_line: lines.append( current_line )
+                    lines.append( word )
                     current_line = ''
                     current_line_len = 0
                     continue
 
-                if current_line_len + word_clean_len > help_width:
-                    wrapped_lines.append(current_line)
+                if current_line_len + word_clean_len > width:
+                    lines.append(current_line)
                     current_line = word
                     current_line_len = word_clean_len
                 else:
                     current_line += word
                     current_line_len += word_clean_len
 
-            if current_line: wrapped_lines.append(current_line)
+            if current_line:
+                lines.append(current_line)
 
-        help_lines = [ line.strip() for line in wrapped_lines if line.strip() ]
+        return [line.strip() for line in lines if line.strip()]
 
-        if not help_lines: return action_header + '\n'
+    def _format_action( self, action: argparse.Action ) -> str:
+        """
+        Formats a single action, now using a dedicated helper for robust text wrapping.
+        """
+        parts = self._format_action_invocation( action )
+        invoc_length = wcswidth( self._strip_colors(parts) )      # use wcswidth here too for consistency
+        action_header = f"{'':<{self._current_indent}}{parts}"
+
+        help_text = self._expand_help( action )
+        if not help_text: return action_header + '\n'
+
+        # calculate help text position and width
+        help_position = min( self._action_max_length + 2, self._max_help_position )
+        help_start_col = self._current_indent + help_position
+        padding = max( help_start_col - (self._current_indent + invoc_length), 2 )
+        help_width = max( self._width - help_start_col, 10 )
+
+        help_lines = self._wrap_colored_text(help_text, help_width)
+
+        if not help_lines: return action_header + "\n"
 
         first_help_line = f"{action_header}{' ' * padding}{help_lines[0]}"
         subsequent_lines = [ f"{' ' * help_start_col}{line}" for line in help_lines[1:] ]
