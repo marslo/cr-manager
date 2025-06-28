@@ -1,3 +1,5 @@
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main)
+
 # cr-manager -- the Copyright Header Manager
 
 A tool to automatically **add**, **update**, or **delete** multi-format copyright headers in source files.
