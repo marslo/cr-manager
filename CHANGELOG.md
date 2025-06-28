@@ -1,3 +1,11 @@
+## [2.0.4](https://github.com/marslo/cr-manager/compare/v2.0.3...v2.0.4) (2025-06-28)
+
+
+### Bug Fixes
+
+* **pyinstaller:** init the main.py for pyinstaller ([33e983e](https://github.com/marslo/cr-manager/commit/33e983e48b8239aff55f65f718303730655c7cc0))
+* **workflow,deploy:** to fix for issue `ERROR: Failed to import from 'libs' package, ... Details: No module named 'wcwidth'` ([85dd1a2](https://github.com/marslo/cr-manager/commit/85dd1a2ca12bde6d8fdc7dc4a6e7634cda5de6a2))
+
 ## [2.0.3](https://github.com/marslo/cr-manager/compare/v2.0.2...v2.0.3) (2025-06-28)
 
 
