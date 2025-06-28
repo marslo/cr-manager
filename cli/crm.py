@@ -16,7 +16,7 @@ try:
     )
     from .libs.manager import CopyrightManager, get_supported_filetypes
 except ImportError as e:
-    print( f"ERROR: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
+    print( "ERROR: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
     sys.exit( 1 )
 
@@ -147,18 +147,14 @@ def main():
 
             elif args.delete:
                 success, msg = manager.delete_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ):
-                    if args.verbose: print( f"{COLOR_DEBUG_I}STATUS: dryrun delete preview shown{COLOR_RESET}" )
-                    stats['debug'] += 1
+                if msg.startswith( 'debug' ): stats['debug'] += 1
                 elif success: print( f"{COLOR_YELLOW}DELETED{COLOR_RESET}" ); stats['deleted'] += 1
                 elif msg == 'not_found': print( f"{COLOR_DEBUG_I}action: Not found, nothing to delete{COLOR_RESET}" ); stats['skipped'] += 1
                 else: raise ValueError( msg )
 
             elif args.update:
                 success, msg = manager.update_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ):
-                    if args.verbose: print( f"{COLOR_DEBUG_I}Status: {COLOR_DEBUG}DRYRUN {COLOR_DEBUG_I}preview shown{COLOR_RESET}" )
-                    stats['debug'] += 1
+                if msg.startswith( 'debug' ): stats['debug'] += 1
                 elif success:
                     if msg == 'updated': print( f"{COLOR_CYAN}UPDATED{COLOR_RESET}" ); stats['updated'] += 1
                     elif msg == 'inserted': print( f"{COLOR_GREEN}ADDED{COLOR_RESET}" ); stats['added'] += 1
@@ -166,9 +162,7 @@ def main():
 
             else:                       # default action: add
                 success, msg = manager.add_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ):
-                    if args.verbose: print( f"{COLOR_DEBUG_I}STATUS: dryrun delete preview shown{COLOR_RESET}" )
-                    stats['debug'] += 1
+                if msg.startswith( 'debug' ): stats['debug'] += 1
                 elif success:
                     if msg == 'skipped': print( f"{COLOR_DEBUG}SKIPPED {COLOR_DEBUG_I}(already exists and matches){COLOR_RESET}" ); stats['skipped'] += 1
                     elif msg == 'updated': print( f"{COLOR_CYAN}UPDATED {COLOR_DEBUG_I}(due to mismatch){COLOR_RESET}" ); stats['updated'] += 1
@@ -203,7 +197,7 @@ def main():
             print( f"{COLOR_GRAY}UPDATED : {COLOR_CYAN_I}{stats['updated']}{COLOR_RESET}" )
             print( f"{COLOR_GRAY}DELETED : {COLOR_RED_I}{stats['deleted']}{COLOR_RESET}" )
             print( f"{COLOR_GRAY}SKIPPED : {COLOR_YELLOW_I}{stats['skipped']}{COLOR_RESET}" )
-        print( f"{COLOR_DEBUG_I}ERRORS/UNSUPPORTED: {COLOR_MAGENTA_I}{stats['errors']}{COLOR_RESET}" )
+        print( f"{COLOR_DEBUG_I}errors or unsupported: {COLOR_MAGENTA_I}{stats['errors']}{COLOR_RESET}" )
         print( f"{COLOR_DEBUG_I}--------------------------{COLOR_RESET}" )
         if exit_code != 0:
             if args.check: print( f"{COLOR_DEBUG}check finished; some files require action or are unsupported{COLOR_RESET}" )

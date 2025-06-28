@@ -6,7 +6,10 @@ import textwrap
 import re
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Set
-from .helper import COLOR_RESET, COLOR_YELLOW, COLOR_MAGENTA, COLOR_DEBUG, COLOR_CYAN, COLOR_RED, COLOR_GRAY_I, COLOR_MAGENTA_I, COLOR_DEBUG_I, COLOR_RED_I, COLOR_YELLOW_I
+from .helper import (
+    COLOR_RESET, COLOR_DEBUG, COLOR_YELLOW, COLOR_MAGENTA, COLOR_CYAN, COLOR_RED,
+    COLOR_DEBUG_I, COLOR_YELLOW_I, COLOR_MAGENTA_I, COLOR_GRAY_I, COLOR_RED_I, COLOR_CYAN_I, COLOR_GREEN_I,
+)
 
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
@@ -432,7 +435,7 @@ class CopyrightManager:
                     final_content += '\n'
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: DELETE from {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} {COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
 
                 debug_output_lines = []
@@ -503,7 +506,7 @@ class CopyrightManager:
                 final_content += '\n'
 
         if debug:
-            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: ADD to {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_GREEN_I}ADD{COLOR_RESET} {COLOR_DEBUG}to{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
             footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
             debug_output = '\n'.join(formatted_lines)
             print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="\n" )
@@ -553,7 +556,7 @@ class CopyrightManager:
                     lines_to_insert = temp_lines
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: UPDATE for {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_CYAN_I}UPDATE{COLOR_RESET} {COLOR_DEBUG}for{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
 
                 debug_output_lines = []
