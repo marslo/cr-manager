@@ -20,5 +20,6 @@ cr-manager = "cli.crm:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+wcwidth = "^0.2.13"
 
 [tool.poetry.group.dev.dependencies]
