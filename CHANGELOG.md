@@ -1,3 +1,12 @@
+## [2.0.3](https://github.com/marslo/cr-manager/compare/v2.0.2...v2.0.3) (2025-06-28)
+
+
+### Bug Fixes
+
+* **help:** enhancement the help message ([b12595e](https://github.com/marslo/cr-manager/commit/b12595eb8288d673abfea76418c04b0b99a4b7d1))
+* **releaserc:** remove `--no-update` from for semantic-release config ([74c8208](https://github.com/marslo/cr-manager/commit/74c8208cb4e7908c3a5b30731dc1b40141265d6b))
+* remote the redundant message for verbose ([b36dda9](https://github.com/marslo/cr-manager/commit/b36dda9ecf40f8441c82ac26efa5724d3c494015))
+
 ## [2.0.2](https://github.com/marslo/cr-manager/compare/v2.0.1...v2.0.2) (2025-06-27)
 
 
