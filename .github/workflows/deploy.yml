@@ -1,0 +1,68 @@
+---
+name: Deploy Executables
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The git tag of the release to upload assets to (e.g., v0.1.0-test).'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-executables:
+    name: Build Standalone Executables
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: python -m pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --without=dev --no-interaction
+
+      - name: Install PyInstaller
+        run: python -m pip install pyinstaller
+
+      - name: Build with PyInstaller
+        id: build-exe
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            OUTPUT_NAME="cr-manager-linux"
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            OUTPUT_NAME="cr-manager-macos"
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            OUTPUT_NAME="cr-manager"
+          fi
+          pyinstaller --name "$OUTPUT_NAME" --onefile --clean "${{ github.workspace }}/cli/crm.py"
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            echo "ASSET_PATH=dist/${OUTPUT_NAME}.exe" >> "$GITHUB_OUTPUT"
+            echo "ASSET_NAME=${OUTPUT_NAME}.exe" >> "$GITHUB_OUTPUT"
+          else
+            echo "ASSET_PATH=dist/${OUTPUT_NAME}" >> "$GITHUB_OUTPUT"
+            echo "ASSET_NAME=${OUTPUT_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Release Asset
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" "${{ steps.build-exe.outputs.ASSET_PATH }}#${{ steps.build-exe.outputs.ASSET_NAME }}" --clobber
