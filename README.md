@@ -16,7 +16,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   - [install the pre-commit hooks](#install-the-pre-commit-hooks)
   - [run the cr-manager for all files](#run-the-cr-manager-for-all-files)
   - [automatic check in pre-commit hooks](#automatic-check-in-pre-commit-hooks)
-  - [update the un-supported filetype](#update-the-un-supported-filetype)
+  - [update the unsupported filetype](#update-the-unsupported-filetype)
 - [run as a CLI tool](#run-as-a-cli-tool)
   - [poetry init and activate](#poetry-init-and-activate)
     - [install poetry](#install-poetry)
@@ -194,7 +194,7 @@ $ git commit -m "your commit message"
 
 ---
 
-## update the un-supported filetype
+## update the unsupported filetype
 ```bash
 $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 ```
