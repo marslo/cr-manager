@@ -5,6 +5,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import List
+import importlib.metadata
 
 try:
     from .libs.helper import (
@@ -23,7 +24,6 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
-VERSION = "v2.0.2"
 
 def main():
     """Main function to handle command-line arguments and process files."""
@@ -32,6 +32,11 @@ def main():
         supported_types_str = ', '.join(get_supported_filetypes())
     except Exception:
         supported_types_str = "[Could not load supported types]"
+
+    try:
+        app_version = importlib.metadata.version( 'cr-manager' )
+    except importlib.metadata.PackageNotFoundError:
+        app_version = "UNKNOWN (not installed)"
 
     parser = argparse.ArgumentParser(
         prog='python -m cli.crm',
@@ -65,9 +70,9 @@ def main():
                                                                                 f"Supported: {COLOR_MAGENTA_I}{supported_types_str}{COLOR_RESET}" )
     option_group.add_argument( '--recursive', '-r' , action='store_true' , help='If FILES includes directories, process their contents recursively.' )
     option_group.add_argument( '--debug',     '-d' , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
-    option_group.add_argument( '--verbose',   '-v' , action='store_true' , help='Show a detailed processing summary.' )
+    option_group.add_argument( '--verbose'         , action='store_true' , help='Show a detailed processing summary.' )
     option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
-    option_group.add_argument( '--version'         , action='version'    , version=f"cr-manager {VERSION}", help="Show program's version number and exit." )
+    option_group.add_argument( '--version',   '-v' , action='version'    , version=f"cr-manager {app_version}", help="Show program's version number and exit." )
 
     args = parser.parse_args()
 
@@ -126,11 +131,11 @@ def main():
     for path in files_to_process:
         stats["processed"] += 1
         print( f"{COLOR_DEBUG_I}>> "
-                f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
-                f"{COLOR_YELLOW}{len(files_to_process)}"
-                f"{COLOR_MAGENTA_I} {path} "
-                f"{COLOR_DEBUG_I}... {COLOR_RESET}",
-              end=""
+               f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
+               f"{COLOR_YELLOW}{len(files_to_process)}"
+               f"{COLOR_MAGENTA_I} {path} "
+               f"{COLOR_DEBUG_I}... {COLOR_RESET}",
+               end=""
              )
 
         try:
@@ -138,8 +143,8 @@ def main():
             if args.check:
                 success, msg = manager.check_copyright_status( path, forced_type )
                 if msg == 'match': print( f"{COLOR_GREEN}OK" ); stats['skipped'] += 1
-                elif msg == 'mismatch': print( f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 0
-                elif msg == 'not_found': print( f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 0
+                elif msg == 'mismatch': print( f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 1
+                elif msg == 'not_found': print( f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 1
                 else: raise ValueError( msg )
 
             elif args.delete:
