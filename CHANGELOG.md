@@ -1,3 +1,10 @@
+## [2.0.7](https://github.com/marslo/cr-manager/compare/v2.0.6...v2.0.7) (2025-08-26)
+
+
+### Bug Fixes
+
+* fix the issue for remove shebang and coding in python type with `--delete` ([#9](https://github.com/marslo/cr-manager/issues/9)) ([e491840](https://github.com/marslo/cr-manager/commit/e49184004db2656caafbba63a9dfd016eed88edb))
+
 ## [2.0.6](https://github.com/marslo/cr-manager/compare/v2.0.5...v2.0.6) (2025-08-26)
 
 
