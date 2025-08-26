@@ -36,8 +36,9 @@ def main():
     except importlib.metadata.PackageNotFoundError:
         app_version = "UNKNOWN (not installed)"
 
+    prog = ( Path(sys.argv[0]).name if (Path(sys.argv[0]).name not in {Path(__file__).name, "__main__.py"} and Path(sys.argv[0]).suffix != ".py") else f"{Path(sys.executable).name} -m {__package__}.{Path(__file__).stem}" )
     parser = argparse.ArgumentParser(
-        prog='python3 -m cli.crm',
+        prog=prog,
         description=COLOR_BOLD + 'A tool to automatically add, update, or delete multi-format copyright headers.' + COLOR_RESET,
         formatter_class=ColorHelpFormatter,
         add_help=False
@@ -101,12 +102,21 @@ def main():
 
     # collect all files to be processed
     files_to_process: List[Path] = []
+    ignores = {
+        "dirs": {".git", "__pycache__"},
+        "files": {"COPYRIGHT", "LICENSE", "README.md"},
+    }
     for item_str in args.files:
         item_path = Path( item_str )
         if item_path.is_dir():
             if args.recursive:
                 if args.verbose: print( f"Info: Recursively scanning directory {item_path} ..." )
-                files_to_process.extend( p for p in item_path.rglob('*') if p.is_file() )
+                files_to_process.extend(
+                    p for p in item_path.rglob("*")
+                    if p.is_file()
+                    and not any( part in ignores["dirs"] for part in p.parts )
+                    and p.name not in ignores["files"]
+                )
             else:
                 print( f"Warning: '{item_path}' is a directory but --recursive was not specified. Skipped.", file=sys.stderr )
         elif item_path.is_file():
