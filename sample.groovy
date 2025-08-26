@@ -1,0 +1,11 @@
+#!/usr/bin/env groovy
+
+/**
+ * @author       marslo@mail.com
+ * @since        2025-01-07
+ * @description  this class is for message constants, including job description, css style, etc.
+**/
+
+import groovy.transform.Field
+
+// vim:tabstop=2:softtabstop=2:shiftwidth=2:expandtab:filetype=groovy
