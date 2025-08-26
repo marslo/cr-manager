@@ -71,7 +71,7 @@ def main():
     option_group.add_argument( '--debug'           , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
     option_group.add_argument( '--verbose'         , action='store_true' , help='Show a detailed processing summary.' )
     option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
-    option_group.add_argument( '--version',   '-v' , action='version'    , version=f"cr-manager {app_version}", help="Show program's version number and exit." )
+    option_group.add_argument( '--version',   '-v' , action='version'    , version=f"cr-manager v{app_version}", help="Show program's version number and exit." )
 
     args = parser.parse_args()
 

@@ -203,6 +203,12 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 
 # run as a CLI tool
 
+| COMMAND                                | DESCRIPTION                                                                                                                          |
+|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `$ poetry run python -m cli.crm <cmd>` | requires `$ poetry install`                                                                                                          |
+| `$ python -m cli.crm <cmd>`            | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                       |
+| `$ cr-manager <cmd>`                   | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`<br>or `pip install --user -e .`<br>or`pipx install .` |
+
 ## poetry init and activate
 
 ### install poetry
@@ -219,17 +225,19 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 
 > [!NOTE]
 > it will:
->> 1. create a virtual environment in the current directory
->> 2. install the `cr-manager` package and its dependencies
+> 1. create a virtual environment in the current directory
+> 2. install the `cr-manager` package and its dependencies
 
 ```bash
 $ poetry install
-
-# to cleanup the poetry venv
-$ poetry env remove python
-# - or -
-$ poetry env remove --all
 ```
+
+- clean up the poetry environment
+  ```bash
+  $ poetry env remove python
+  # - or -
+  $ poetry env remove --all
+  ```
 
 ### run as CLI
 
@@ -241,13 +249,13 @@ $ poetry env remove --all
 
 - run in the virtual environment
 
-  > [!TIP]
-  > - to show/check the current venv:
+  > to show/check the current venv:
   >> ```bash
   >> $ echo "${VIRTUAL_ENV}"
   >> /Users/marslo/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13
   >> ```
-  > - to show the package in current venv
+  >
+  > to show the package in current venv
   >> ```bash
   >> $ which -a cr-manager
   >> ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13/bin/cr-manager
@@ -264,15 +272,21 @@ $ poetry env remove --all
   $ cr-manager --help
   ```
 
-### build as local package
+### install as local package
 
 ```bash
+# via pip
 # - in global --
 $ python3 -m pip install --upgrade --editable .
 # - in local --
 $ python3 -m pip install --upgrade --user --editable .
 
+# via pipx
+$ pipx install --editable [--force] .
+
+# verify
 $ cr-manager --help
+$ cr-manager --version
 ```
 
 ## example usage
@@ -280,14 +294,14 @@ $ cr-manager --help
 ### add new copyright headers
 ```bash
 # single file
-$ python -m cli.crm /path/to/file
+$ cr-manager /path/to/file
 
 # files recursively in directories
-$ python -m cli.crm --recursive /path/to/directory
+$ cr-manager --recursive /path/to/directory
 
 # add to non-supported suffixes with supplied filetype
 # -- e.e. add to .txt files as python files --
-$ python -m cli.crm --filetype python /path/to/file.txt
+$ cr-manager --filetype python /path/to/file.txt
 ```
 
 ### update existing copyright headers
@@ -297,10 +311,10 @@ $ python -m cli.crm --filetype python /path/to/file.txt
 
 ```bash
 # single file
-$ python -m cli.crm --update /path/to/file
+$ cr-manager --update /path/to/file
 
 # files recursively in directories
-$ python -m cli.crm --update --recursive /path/to/directory
+$ cr-manager --update --recursive /path/to/directory
 ```
 
 ### delete existing copyright headers
@@ -310,22 +324,22 @@ $ python -m cli.crm --update --recursive /path/to/directory
 
 ```bash
 # single file
-$ python -m cli.crm --delete /path/to/file
+$ cr-manager --delete /path/to/file
 
 # files recursively in directories
-$ python -m cli.crm --delete --recursive /path/to/directory
+$ cr-manger --delete --recursive /path/to/directory
 ```
 
 ### debug mode
 ```bash
 # *add* without modifying files
-$ python -m cli.crm --debug /path/to/file
+$ cr-manager --debug /path/to/file
 
 $ *update* without modifying files
-$ python -m cli.crm --update --debug /path/to/file
+$ cr-manager --update --debug /path/to/file
 
 # *delete* without modifying files
-$ python -m cli.crm --delete --debug /path/to/file
+$ cr-manager --delete --debug /path/to/file
 ```
 
 # help message
