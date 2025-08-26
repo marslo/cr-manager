@@ -317,18 +317,25 @@ class CopyrightManager:
         return cr_start, cr_end
 
     def _find_bordered_section( self, lines: List[str], block_start: int, block_end: int, fmt: str ) -> Tuple[int, int]:
-        """Finds the start and end of a bordered section within a larger block."""
+        """Find the start and end line indexes of the bordered copyright section.
+        The pattern here mirrors exactly how _format_copyright_as_list() builds the borders
+        """
         config = FILE_TYPE_MAP[fmt]['config']
-        comment, box_char = config.get( 'comment_string', '#' ), config.get( 'box_char', '=' )
-        esc_comment_rstrip = re.escape( comment.rstrip() )
-        esc_box = re.escape( box_char )
-        border_pat = re.compile( r"^\s*" + esc_comment_rstrip + r".*" + esc_box + r"+.*" + re.escape(comment.strip()) + r"\s*$" )
+        comment = config.get( 'comment_string', '#' )
+        box_char = config.get( 'box_char', '=' )
+        start_marker = config.get( 'start_line', '' )
 
-        borders_in_block = [ i for i in range(block_start, block_end + 1) if border_pat.match(lines[i]) ]
+        right_suffix = re.escape( comment.strip() )
+        box = re.escape( box_char )
+        left_prefix = re.escape( comment.strip() )
 
-        if len(borders_in_block) >= 2:
-            return borders_in_block[0], borders_in_block[-1]
+        if start_marker:
+            border_re = re.compile( rf"^\s*{box}{{3,}}{right_suffix}\s*$" )
+        else:
+            border_re = re.compile( rf"^\s*{left_prefix}\s*{box}{{3,}}\s*$" )
 
+        borders = [ i for i in range(block_start, block_end + 1) if border_re.match(lines[i]) ]
+        if len(borders) >= 2: return borders[0], borders[-1]
         return -1, -1
 
     def _find_first_comment_block( self, lines: List[str], search_start_idx: int, fmt: str ) -> Tuple[int, int]:
@@ -392,7 +399,7 @@ class CopyrightManager:
         return stripped == comment_marker
 
     def delete_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
-        """Deletes the copyright block from a file."""
+        """Delete only the bordered copyright section for bordered formats. Preserve shebang/coding."""
         try:
             content = path.read_text( encoding='utf-8' )
             fmt = detect_file_format( path, forced_type )
@@ -400,22 +407,22 @@ class CopyrightManager:
 
             lines = content.splitlines()
             block_start, block_end = self._detect_copyright_block( lines, fmt )
-
-            if block_start == -1:
-                return False, 'not_found'
+            if block_start == -1: return False, 'not_found'
 
             config = FILE_TYPE_MAP[fmt]['config']
-
-            has_other_info = any(AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end+1])
+            is_simple_format = config.get( 'simple_format', False )
+            has_other_info = any( AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end + 1] )
 
             del_start, del_end = -1, -1
-            if config.get( 'simple_format', False ):
-                del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
-            else:
+
+            if not is_simple_format:
                 del_start, del_end = self._find_bordered_section( lines, block_start, block_end, fmt )
 
+            if del_start == -1 and is_simple_format:
+                del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
+
             if del_start == -1 and has_other_info:
-                 return False, 'not_found_in_combined'
+                return False, 'not_found_in_combined'
 
             if del_start == -1:
                 del_start, del_end = block_start, block_end
@@ -430,27 +437,30 @@ class CopyrightManager:
                 new_lines = lines[:block_start] + lines[block_end + 1:]
 
             final_content = '\n'.join( new_lines )
-            if content.endswith('\n') and final_content:
-                if not final_content.endswith('\n'):
-                    final_content += '\n'
+            if content.endswith('\n') and final_content and not final_content.endswith('\n'):
+                final_content += '\n'
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} {COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = (
+                    f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} "
+                    f"{COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} "
+                    f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                )
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-
                 debug_output_lines = []
                 if has_other_info:
-                    debug_output_lines = lines[block_start:del_start] + lines[del_end+1:block_end+1]
-
-                debug_output = '\n'.join(debug_output_lines)
+                    debug_output_lines = lines[ block_start:del_start ] + lines[ del_end + 1:block_end + 1 ]
+                debug_output = '\n'.join( debug_output_lines )
                 print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="\n" )
                 return True, 'debug_deleted'
 
             path.write_text( final_content, encoding='utf-8' )
             return True, 'deleted'
 
-        except FileNotFoundError: return False, f"{COLOR_RED}ERROR: {COLOR_MAGENTA_I}{path} {COLOR_DEBUG_I}not found{COLOR_RESET}"
-        except Exception as e: return False, f"ERROR: {e}"
+        except FileNotFoundError:
+            return False, f"{COLOR_RED}ERROR: {COLOR_MAGENTA_I}{path} {COLOR_DEBUG_I}not found{COLOR_RESET}"
+        except Exception as e:
+            return False, f"ERROR: {e}"
 
     def check_copyright_status( self, path: Path, forced_type: Optional[str] = None ) -> Tuple[bool, str]:
         """Checks copyright status. Returns: 'match', 'mismatch', 'not_found', etc."""
@@ -516,66 +526,68 @@ class CopyrightManager:
         return True, 'inserted'
 
     def update_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
-        """Updates or adds a copyright header."""
+        """Update (or add) a copyright header, replacing only the bordered section for bordered formats."""
         try:
             fmt = detect_file_format( path, forced_type )
             if not fmt: raise ValueError( 'unsupported_format' )
 
             new_formatted_lines = self._format_copyright_as_list( fmt )
-
             content = path.read_text( encoding='utf-8' )
             lines = content.splitlines()
-            block_start, block_end = self._detect_copyright_block( lines, fmt )
 
+            block_start, block_end = self._detect_copyright_block( lines, fmt )
             if block_start == -1:
                 return self._insert_copyright( path, content, new_formatted_lines, fmt, debug=debug, verbose=verbose )
 
             config = FILE_TYPE_MAP[fmt]['config']
-            has_other_info = any( AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end+1] )
+            is_simple_format = config.get( 'simple_format', False )
+            has_other_info = any( AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end + 1] )
 
             replace_start, replace_end = block_start, block_end
             lines_to_insert = new_formatted_lines
 
-            if has_other_info:
-                cr_start, cr_end = -1, -1
-                if config.get( 'simple_format', False ):
-                    cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
-                else:
-                    cr_start, cr_end = self._find_bordered_section( lines, block_start, block_end, fmt )
-
-                if cr_start != -1:
-                    replace_start, replace_end = cr_start, cr_end
-
-                    temp_lines = list( new_formatted_lines )
+            # Bordered formats: try to replace only the bordered section first
+            if not is_simple_format:
+                bs, be = self._find_bordered_section(lines, block_start, block_end, fmt)
+                if bs != -1:
+                    replace_start, replace_end = bs, be
+                    tmp = list( new_formatted_lines )
                     start_line = config.get( 'start_line', '' )
                     end_line = config.get( 'end_line', '' )
-                    if start_line and temp_lines and temp_lines[0] == start_line:
-                        temp_lines.pop(0)
-                    if end_line and temp_lines and temp_lines[-1] == end_line:
-                        temp_lines.pop()
-                    lines_to_insert = temp_lines
+                    if start_line and tmp and tmp[0] == start_line: tmp.pop(0)
+                    if end_line and tmp and tmp[-1] == end_line: tmp.pop()
+                    lines_to_insert = tmp
+
+            # Simple formats that contain other info: narrow to the actual subrange
+            if is_simple_format and has_other_info:
+                cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
+                if cr_start != -1:
+                    replace_start, replace_end = cr_start, cr_end
+                    lines_to_insert = self._format_copyright_content_lines( fmt, bordered=False )
 
             if debug:
-                header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_CYAN_I}UPDATE{COLOR_RESET} {COLOR_DEBUG}for{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                header = (
+                    f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_CYAN_I}UPDATE{COLOR_RESET} "
+                    f"{COLOR_DEBUG}for{COLOR_RESET} {COLOR_MAGENTA}{path} "
+                    f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                )
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-
-                debug_output_lines = []
-                if has_other_info:
-                    debug_output_lines.extend( lines[block_start:replace_start] )
-                    debug_output_lines.extend( lines_to_insert )
-                    debug_output_lines.extend( lines[replace_end + 1:block_end + 1] )
+                if replace_start != block_start or replace_end != block_end:
+                    debug_output_lines = (
+                        lines[block_start:replace_start] +
+                        lines_to_insert +
+                        lines[replace_end + 1:block_end + 1]
+                    )
                 else:
                     debug_output_lines = new_formatted_lines
-
                 debug_output = '\n'.join( debug_output_lines )
                 print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end='\n' )
                 return True, 'debug_updated'
 
             new_lines = lines[:replace_start] + lines_to_insert + lines[replace_end + 1:]
             final_content = '\n'.join( new_lines )
-
-            if content.endswith('\n'):
-                if not final_content.endswith('\n'): final_content += '\n'
+            if content.endswith('\n') and not final_content.endswith('\n'):
+                final_content += '\n'
 
             path.write_text( final_content, encoding='utf-8' )
             return True, 'updated'
