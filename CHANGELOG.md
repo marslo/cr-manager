@@ -1,3 +1,10 @@
+## [2.0.6](https://github.com/marslo/cr-manager/compare/v2.0.5...v2.0.6) (2025-08-26)
+
+
+### Bug Fixes
+
+* fix the issue for misjudgment the shebang and coding line ([#8](https://github.com/marslo/cr-manager/issues/8)) ([9e37e78](https://github.com/marslo/cr-manager/commit/9e37e78150cee1e6798fbd2a71d56615b88b3f20))
+
 ## [2.0.5](https://github.com/marslo/cr-manager/compare/v2.0.4...v2.0.5) (2025-08-26)
 
 
