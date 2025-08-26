@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/marslo/cr-manager/compare/v2.0.4...v2.0.5) (2025-08-26)
+
+
+### Bug Fixes
+
+* **ignore:** add files/folders ignore list for recursive mode ([4875fec](https://github.com/marslo/cr-manager/commit/4875fece185cd7dccf59e5477be46a08bd33322b))
+
 ## [2.0.4](https://github.com/marslo/cr-manager/compare/v2.0.3...v2.0.4) (2025-06-28)
 
 
