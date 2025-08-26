@@ -399,7 +399,7 @@ class CopyrightManager:
         return stripped == comment_marker
 
     def delete_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
-        """Delete only the bordered copyright section for bordered formats. Preserve shebang/coding."""
+        """Delete the copyright header. Prefer removing only the bordered section when present."""
         try:
             content = path.read_text( encoding='utf-8' )
             fmt = detect_file_format( path, forced_type )
@@ -414,28 +414,40 @@ class CopyrightManager:
             has_other_info = any( AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end + 1] )
 
             del_start, del_end = -1, -1
-
             if not is_simple_format:
                 del_start, del_end = self._find_bordered_section( lines, block_start, block_end, fmt )
-
-            if del_start == -1 and is_simple_format:
+            elif is_simple_format:
                 del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
 
-            if del_start == -1 and has_other_info:
-                return False, 'not_found_in_combined'
-
-            if del_start == -1:
-                del_start, del_end = block_start, block_end
-
-            if has_other_info:
+            if del_start != -1:
                 if del_end + 1 <= block_end and self._is_blank_comment_line( lines[del_end + 1], config ):
                     del_end += 1
                 if del_start - 1 >= block_start and self._is_blank_comment_line( lines[del_start - 1], config ):
                     del_start -= 1
-                new_lines = lines[:del_start] + lines[del_end + 1:]
-            else:
-                new_lines = lines[:block_start] + lines[block_end + 1:]
 
+                new_lines = lines[:del_start] + lines[del_end + 1:]
+                final_content = '\n'.join( new_lines )
+                if content.endswith('\n') and final_content and not final_content.endswith('\n'):
+                    final_content += '\n'
+
+                if debug:
+                    header = (
+                        f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} "
+                        f"{COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} "
+                        f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                    )
+                    footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
+                    dbg = lines[ block_start:del_start ] + lines[del_end + 1:block_end + 1]
+                    print(f"{header}{COLOR_GRAY_I}{'\n'.join(dbg)}{COLOR_RESET}{footer}", end="\n")
+                    return True, 'debug_deleted'
+
+                path.write_text( final_content, encoding='utf-8' )
+                return True, 'deleted'
+
+            if has_other_info:
+                return False, 'not_found_in_combined'
+
+            new_lines = lines[ :block_start ] + lines[ block_end + 1: ]
             final_content = '\n'.join( new_lines )
             if content.endswith('\n') and final_content and not final_content.endswith('\n'):
                 final_content += '\n'
@@ -447,11 +459,7 @@ class CopyrightManager:
                     f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                 )
                 footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-                debug_output_lines = []
-                if has_other_info:
-                    debug_output_lines = lines[ block_start:del_start ] + lines[ del_end + 1:block_end + 1 ]
-                debug_output = '\n'.join( debug_output_lines )
-                print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="\n" )
+                print( f"{header}{COLOR_GRAY_I}{COLOR_RESET}{footer}", end="\n" )
                 return True, 'debug_deleted'
 
             path.write_text( final_content, encoding='utf-8' )
