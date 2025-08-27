@@ -144,19 +144,20 @@ result
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.0
+    rev: v2.0.8
     hooks:
       - id: cr-manager
         args: ["--update"]
 
-# or specify the copyright file to use
+# or specify the copyright file to use, and only check specific files/folders
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.0
+    rev: v2.0.8
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
 ```
 
 ```yaml
@@ -164,7 +165,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.0
+    rev: v2.0.8
     hooks:
       - id: cr-manager
         args: ["--check"]
