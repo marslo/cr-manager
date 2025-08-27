@@ -498,18 +498,16 @@ class CopyrightManager:
         lines = content.splitlines()
         insert_pos = 0
 
-        if lines and lines[0].startswith("#!"):
+        if lines and lines[0].startswith('#!'):
             insert_pos = 1
         if len( lines ) > insert_pos and re.match( r"^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)", lines[insert_pos] ):
             insert_pos += 1
 
-        first_comment_start, _ = self._find_first_comment_block( lines, insert_pos, fmt )
-        if first_comment_start != -1:
-            insert_pos = first_comment_start
+        new_lines: List[str] = []
 
-        new_lines = lines[:insert_pos]
-        if insert_pos > 0 and lines[insert_pos-1].strip():
-            new_lines.append('')
+        if insert_pos > 0:
+            new_lines.extend( lines[:insert_pos] )
+            if new_lines and new_lines[-1].strip(): new_lines.append('')
 
         new_lines.extend( formatted_lines )
 
@@ -517,16 +515,19 @@ class CopyrightManager:
             new_lines.append('')
 
         new_lines.extend( lines[insert_pos:] )
-
         final_content = '\n'.join( new_lines )
         if content.endswith('\n') or ( not content and final_content ):
             if not final_content.endswith('\n'):
                 final_content += '\n'
 
         if debug:
-            header = f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_GREEN_I}ADD{COLOR_RESET} {COLOR_DEBUG}to{COLOR_RESET} {COLOR_MAGENTA}{path} {COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+            header = (
+                f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_GREEN_I}ADD{COLOR_RESET} "
+                f"{COLOR_DEBUG}to{COLOR_RESET} {COLOR_MAGENTA}{path} "
+                f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else '\n'
+            )
             footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-            debug_output = '\n'.join(formatted_lines)
+            debug_output = '\n'.join( formatted_lines )
             print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="\n" )
             return True, 'debug_added'
 
