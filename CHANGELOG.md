@@ -1,3 +1,10 @@
+## [2.0.8](https://github.com/marslo/cr-manager/compare/v2.0.7...v2.0.8) (2025-08-27)
+
+
+### Bug Fixes
+
+* **python:** fix the insert position base on shebang/coding if filetype is python ([#10](https://github.com/marslo/cr-manager/issues/10)) ([ef837e5](https://github.com/marslo/cr-manager/commit/ef837e55c36dce53ab66b480e217ef48c7348f65))
+
 ## [2.0.7](https://github.com/marslo/cr-manager/compare/v2.0.6...v2.0.7) (2025-08-26)
 
 
