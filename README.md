@@ -231,6 +231,9 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 
 ```bash
 $ poetry install
+
+# -- enable pylint --
+$ poetry add --dev pylint
 ```
 
 - clean up the poetry environment
@@ -238,6 +241,9 @@ $ poetry install
   $ poetry env remove python
   # - or -
   $ poetry env remove --all
+  # -- clear cache --
+  $ poetry cache clear pypi --all
+  $ poetry cache clear virtualenvs --all
   ```
 
 ### run as CLI
