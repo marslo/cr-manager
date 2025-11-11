@@ -228,12 +228,13 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 > it will:
 > 1. create a virtual environment in the current directory
 > 2. install the `cr-manager` package and its dependencies
+> 3. to enable the pylint in pyproject.toml:
+>> ```bash
+>> $ poetry add --dev pylint
+>> ```
 
 ```bash
 $ poetry install
-
-# -- enable pylint --
-$ poetry add --dev pylint
 ```
 
 - clean up the poetry environment
