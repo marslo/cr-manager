@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/marslo/cr-manager/compare/v2.0.8...v3.0.0) (2025-11-11)
+
+
+* feat(python3.14,color)!: improve regex handling in helper.py for better terminal formatting ([24ff244](https://github.com/marslo/cr-manager/commit/24ff24487c9eed6cdd2250cfbf46208bf8d3df1d))
+
+
+### BREAKING CHANGES
+
+* update python version requirement to >=3.10; and support python3.14
+
+Signed-off-by: marslo <marslo.jiao@gmail.com>
+
 ## [2.0.8](https://github.com/marslo/cr-manager/compare/v2.0.7...v2.0.8) (2025-08-27)
 
 
