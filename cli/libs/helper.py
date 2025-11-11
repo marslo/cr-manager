@@ -42,7 +42,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         # Get terminal width dynamically, with a fallback to 120.
         try:
             width = shutil.get_terminal_size(fallback=(120, 24)).columns
-        except Exception:
+        except Exception:              # pylint: disable=broad-exception-caught
             width = 120
 
         super().__init__(
@@ -126,7 +126,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
             return action_string.strip()
 
         # replace each optional argument in the usage string with its new combined form.
-        usage_str = re.sub(r'\[([^\[\]\s]+)\]', lambda m: f"[{get_combined_option(m.group(0))}]", usage_str)
+        usage_str = re.sub(r'(?<!\x1b)\[([^\[\]\s]+)\]', lambda m: f"[{get_combined_option(m.group(0))}]", usage_str)
 
         lines = usage_str.split('\n')
         if not lines or not lines[0]: return self._bold("USAGE") + "\n\n"
@@ -135,7 +135,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         line_2 = '  ' + lines[0]
 
         # calculate alignment for subsequent lines based on the start of the arguments
-        align_char_match = re.search( r'(\[|\b[A-Z]{2,})', line_2 )
+        align_char_match = re.search( r'(\[|\b[A-Z]{2,})', self._strip_colors(line_2) )
         if align_char_match:
             indent_pos = align_char_match.start()
             indent = ' ' * indent_pos
