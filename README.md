@@ -144,7 +144,7 @@ result
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.8
+    rev: v3.0.0
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -153,7 +153,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.8
+    rev: v3.0.0
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -165,7 +165,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v2.0.8
+    rev: v3.0.0
     hooks:
       - id: cr-manager
         args: ["--check"]
