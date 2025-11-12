@@ -5,7 +5,13 @@
   ],
   "tagFormat": "v${version}",
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        { "type": "docs", "release": "patch" },
+        { "type": "ci",   "release": "patch" }
+      ]
+    }],
     "@semantic-release/release-notes-generator",
     ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
     ["@semantic-release/exec", { "prepareCmd": "poetry version ${nextRelease.version} && poetry lock" }],
