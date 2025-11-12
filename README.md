@@ -9,26 +9,28 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 ---
 
 - [Features](#features)
+- [Install](#install)
+  - [Install as Binary](#install-as-binary)
+  - [Install as pre-commit Hook](#install-as-pre-commit-hook)
+  - [Install as Local Package](#install-as-local-package)
 - [Action Modes](#action-modes)
-- [Supported File Types and Formats](#supported-file-types-and-formats)
-- [running in pre-commit hooks](#running-in-pre-commit-hooks)
-  - [prepare `.pre-commit-config.yaml`](#prepare-pre-commit-configyaml)
-  - [install the pre-commit hooks](#install-the-pre-commit-hooks)
-  - [run the cr-manager for all files](#run-the-cr-manager-for-all-files)
-  - [automatic check in pre-commit hooks](#automatic-check-in-pre-commit-hooks)
-  - [update the unsupported filetype](#update-the-unsupported-filetype)
-- [run as a CLI tool](#run-as-a-cli-tool)
-  - [poetry init and activate](#poetry-init-and-activate)
-    - [install poetry](#install-poetry)
-    - [init poetry environment](#init-poetry-environment)
-    - [run as CLI](#run-as-cli)
-    - [build as local package](#build-as-local-package)
-  - [example usage](#example-usage)
-    - [add new copyright headers](#add-new-copyright-headers)
-    - [update existing copyright headers](#update-existing-copyright-headers)
-    - [delete existing copyright headers](#delete-existing-copyright-headers)
-    - [debug mode](#debug-mode)
-- [help message](#help-message)
+  - [Supported File Types and Formats](#supported-file-types-and-formats)
+- [Running as pre-commit Hooks](#running-as-pre-commit-hooks)
+  - [Install pre-commit Hooks](#install-pre-commit-hooks)
+  - [Running Manually](#running-manually)
+  - [Running Automatcially](#running-automatcially)
+  - [Unsupported Filetype](#unsupported-filetype)
+- [Running as Binary](#running-as-binary)
+  - [Add New Copyright Headers](#add-new-copyright-headers)
+  - [Update Existing Copyright Headers](#update-existing-copyright-headers)
+  - [Delete Existing Copyright Headers](#delete-existing-copyright-headers)
+  - [Debug Mode](#debug-mode)
+- [Running as CLI Tool](#running-as-cli-tool)
+  - [Poetry Setup](#poetry-setup)
+    - [Install Poetry](#install-poetry)
+    - [Init Poetry Environment](#init-poetry-environment)
+    - [Run as CLI](#run-as-cli)
+- [Help Message](#help-message)
 
 ---
 
@@ -40,6 +42,87 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
 - Supports combined author-info and copyright headers.
+
+---
+
+# Install
+
+> [!TIP]
+> - enable the ansicolor in Windows terminal for better output experience.
+>> ```batch
+>> reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+>> ```
+
+## Install as Binary
+
+```bash
+$ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
+
+# linux
+$ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
+$ chmod +x cr-manager
+
+# macos
+$ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
+$ chmod +x cr-manager
+
+# windows - running in cmd
+> powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
+```
+
+## Install as pre-commit Hook
+```yaml
+# if `COPYRIGHT` file can be found in the root directory of this repository
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.1
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+
+# or specify the copyright file to use, and only check specific files/folders
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.1
+    hooks:
+      - id: cr-manager
+        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+```
+
+```yaml
+# only check the copyright headers without modifying files after commit
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.1
+    hooks:
+      - id: cr-manager
+        args: ["--check"]
+        stages: [post-commit]
+```
+
+## Install as Local Package
+
+```bash
+# clone the repo
+$ git clone git@github.com:marslo/cr-manager.git
+
+# install via pip
+# - in global --
+$ python3 -m pip install --upgrade --editable .
+# - in local --
+$ python3 -m pip install --upgrade --user --editable .
+
+# or install via pipx
+$ pipx install --editable [--force] .
+
+# verify
+$ cr-manager --help
+$ cr-manager --version
+```
 
 ---
 
@@ -57,10 +140,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ---
 
-# Supported File Types and Formats
+## Supported File Types and Formats
 
 > [!TIP]
-> - check [Run as a CLI tool](#run-as-a-cli-tool) first to install necessary dependencies via `poetry install`.
+> - check [Running as CLI tool](#running-as-cli-tool) first to install necessary dependencies via `poetry install`.
 
 |                    FILETYPE                   |           SUFFIXES          |
 |:---------------------------------------------:|:---------------------------:|
@@ -136,73 +219,96 @@ result
 
 ---
 
-# running in pre-commit hooks
+# Running as pre-commit Hooks
 
-## prepare `.pre-commit-config.yaml`
-```yaml
-# if `COPYRIGHT` file can be found in the root directory of this repository
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--update"]
-
-# or specify the copyright file to use, and only check specific files/folders
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
-        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
-```
-
-```yaml
-# only check the copyright headers without modifying files after commit
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--check"]
-        stages: [post-commit]
-```
-
-## install the pre-commit hooks
+## Install pre-commit Hooks
 ```bash
-$ pre-commit install
+$ pre-commit install --install-hooks
 ```
 
-## run the cr-manager for all files
+## Running Manually
 
 > [!TIP]
 > without hook, you can run the cr-manager manually for all files in the repository.
 
 ```bash
 $ pre-commit run cr-manager --all-files
+
+# or particular file
+$ pre-commit run cr-manager --files path/to/file
 ```
 
 ![run cr-manager --all-files](./screenshots/cr-manager-pre-commit.png)
 
-## automatic check in pre-commit hooks
+## Running Automatcially
 ```bash
 $ git commit -m "your commit message"
 ```
 
----
-
-## update the unsupported filetype
+## Unsupported Filetype
 ```bash
 $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 ```
 
 ![un-supported filetype](./screenshots/handle-unsupported-filetype.png)
 
-# run as a CLI tool
+---
+
+# Running as Binary
+
+## Add New Copyright Headers
+```bash
+# single file
+$ cr-manager /path/to/file
+
+# files recursively in directories
+$ cr-manager --recursive /path/to/directory
+
+# add to non-supported suffixes with supplied filetype
+# -- e.e. add to .txt files as python files --
+$ cr-manager --filetype python /path/to/file.txt
+```
+
+## Update Existing Copyright Headers
+
+> [!TIP]
+> `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
+
+```bash
+# single file
+$ cr-manager --update /path/to/file
+
+# files recursively in directories
+$ cr-manager --update --recursive /path/to/directory
+```
+
+## Delete Existing Copyright Headers
+
+> [!TIP]
+> `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
+
+```bash
+# single file
+$ cr-manager --delete /path/to/file
+
+# files recursively in directories
+$ cr-manger --delete --recursive /path/to/directory
+```
+
+## Debug Mode
+
+```bash
+# *add* without modifying files
+$ cr-manager --debug /path/to/file
+
+$ *update* without modifying files
+$ cr-manager --update --debug /path/to/file
+
+# *delete* without modifying files
+$ cr-manager --delete --debug /path/to/file
+```
+
+# Running as CLI Tool
 
 | COMMAND                                | DESCRIPTION                                                                                                                          |
 |----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -210,9 +316,9 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 | `$ python -m cli.crm <cmd>`            | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                       |
 | `$ cr-manager <cmd>`                   | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`<br>or `pip install --user -e .`<br>or`pipx install .` |
 
-## poetry init and activate
+## Poetry Setup
 
-### install poetry
+### Install Poetry
 
 | ENVIRONMENT | COMMAND                                                                                       |
 |-------------|-----------------------------------------------------------------------------------------------|
@@ -222,7 +328,7 @@ $ python -m cli.crm [--update] --filetype python /path/to/file.txt
 | pipx        | `pipx install poetry`                                                                         |
 | macOS       | `brew install poetry`                                                                         |
 
-### init poetry environment
+### Init Poetry Environment
 
 > [!NOTE]
 > it will:
@@ -242,12 +348,13 @@ $ poetry install
   $ poetry env remove python
   # - or -
   $ poetry env remove --all
-  # -- clear cache --
+
+  # clear cache
   $ poetry cache clear pypi --all
   $ poetry cache clear virtualenvs --all
   ```
 
-### run as CLI
+### Run as CLI
 
 - run in the poetry environment
 
@@ -280,77 +387,7 @@ $ poetry install
   $ cr-manager --help
   ```
 
-### install as local package
-
-```bash
-# via pip
-# - in global --
-$ python3 -m pip install --upgrade --editable .
-# - in local --
-$ python3 -m pip install --upgrade --user --editable .
-
-# via pipx
-$ pipx install --editable [--force] .
-
-# verify
-$ cr-manager --help
-$ cr-manager --version
-```
-
-## example usage
-
-### add new copyright headers
-```bash
-# single file
-$ cr-manager /path/to/file
-
-# files recursively in directories
-$ cr-manager --recursive /path/to/directory
-
-# add to non-supported suffixes with supplied filetype
-# -- e.e. add to .txt files as python files --
-$ cr-manager --filetype python /path/to/file.txt
-```
-
-### update existing copyright headers
-
-> [!TIP]
-> `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
-
-```bash
-# single file
-$ cr-manager --update /path/to/file
-
-# files recursively in directories
-$ cr-manager --update --recursive /path/to/directory
-```
-
-### delete existing copyright headers
-
-> [!TIP]
-> `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
-
-```bash
-# single file
-$ cr-manager --delete /path/to/file
-
-# files recursively in directories
-$ cr-manger --delete --recursive /path/to/directory
-```
-
-### debug mode
-```bash
-# *add* without modifying files
-$ cr-manager --debug /path/to/file
-
-$ *update* without modifying files
-$ cr-manager --update --debug /path/to/file
-
-# *delete* without modifying files
-$ cr-manager --delete --debug /path/to/file
-```
-
-# help message
+# Help Message
 
 ```bash
 $ poetry run python3 -m cli.crm --help
