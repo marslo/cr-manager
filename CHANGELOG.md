@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/marslo/cr-manager/compare/v3.0.1...v3.0.2) (2025-11-14)
+
+
+### Bug Fixes
+
+* **compatibility:** for lower python version compatibility, and fix/bypass the pylint warning ([#15](https://github.com/marslo/cr-manager/issues/15)) ([a1fa458](https://github.com/marslo/cr-manager/commit/a1fa45859dce935f2fa145e4b5230d485e05b2b7)), closes [#14](https://github.com/marslo/cr-manager/issues/14)
+
 ## [3.0.1](https://github.com/marslo/cr-manager/compare/v3.0.0...v3.0.1) (2025-11-12)
 
 # [3.0.0](https://github.com/marslo/cr-manager/compare/v2.0.8...v3.0.0) (2025-11-11)

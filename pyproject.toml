@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "cr-manager"
-version = "3.0.1"
+version = "3.0.2"
 description = "Tool to automatically add, update, or delete multi-format copyright headers"
 authors = ["marslo <marslo.jiao@gmail.com>"]
 license = "MIT"
