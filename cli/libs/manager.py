@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=broad-exception-caught
+
+"""
+to provides the core logic for detecting, inserting, updating, and
+removing copyright headers across multiple programming languages and file
+formats. It is designed to work with configurable comment styles and supports
+both “simple” and “bordered” formats, making it suitable for heterogeneous
+codebases.
+"""
 
 # libs/manager.py
 import sys
@@ -83,6 +92,7 @@ def get_supported_filetypes() -> List[str]:
     return sorted( list(all_ft) )
 
 def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional[str]:
+    # pylint: disable=too-many-branches too-many-return-statements
     """
     Detects the file format.
     Priority order: 1. Forced filetype, 2. Vim modeline, 3. File suffix, 4. Content heuristics.
@@ -161,6 +171,8 @@ def _preprocess_copyright_text( raw_text: str ) -> List[str]:
 
 # ====================== CORE CLASS ======================
 class CopyrightManager:
+    """Core engine for detecting, generating, inserting, updating, and removing copyright headers across multiple file formats."""
+
     def __init__( self, copyright_path: Path ):
         """Initializes the manager with the path to the copyright template file."""
         self.copyright_text = self._load_copyright( copyright_path )
@@ -205,16 +217,15 @@ class CopyrightManager:
                 print( f"{COLOR_MAGENTA}ERROR: {COLOR_DEBUG_I}target is not a valid file - {COLOR_RED_I}{path}{COLOR_RESET}", file=sys.stderr )
             return None
 
-        if fmt:
-            return self._format_copyright( fmt )
-        else:
-            target = f"type {COLOR_MAGENTA_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_MAGENTA_I}'{path}'"
-            print( f"{COLOR_CYAN}INFO: {COLOR_DEBUG_I}could not determine a supported format for {target}{COLOR_RESET}", file=sys.stderr )
-            supported_ft_list = get_supported_filetypes()
-            if supported_ft_list:
-                hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_MAGENTA_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
-                print( hint, file=sys.stderr )
-            return None
+        if fmt: return self._format_copyright( fmt )
+
+        target = f"type {COLOR_MAGENTA_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_MAGENTA_I}'{path}'"
+        print( f"{COLOR_CYAN}INFO: {COLOR_DEBUG_I}could not determine a supported format for {target}{COLOR_RESET}", file=sys.stderr )
+        supported_ft_list = get_supported_filetypes()
+        if supported_ft_list:
+            hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_MAGENTA_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
+            print( hint, file=sys.stderr )
+        return None
 
     def _format_copyright_content_lines( self, fmt: str, bordered: bool ) -> List[str]:
         """Generates just the content lines of a copyright block."""
@@ -339,6 +350,7 @@ class CopyrightManager:
         return -1, -1
 
     def _find_first_comment_block( self, lines: List[str], search_start_idx: int, fmt: str ) -> Tuple[int, int]:
+        # pylint: disable=too-many-locals
         """Finds the first continuous block of comments."""
         config = FILE_TYPE_MAP[fmt]['config']
         start_marker = config.get( 'start_line', '' )
@@ -386,8 +398,7 @@ class CopyrightManager:
             if cr_start != -1:
                 return '\n'.join( lines[cr_start : cr_end + 1] )
             return None
-        else:
-            return '\n'.join( lines[block_start : block_end + 1] )
+        return '\n'.join( lines[block_start : block_end + 1] )
 
     @staticmethod
     def _is_blank_comment_line( line: str, config: Dict ) -> bool:
@@ -399,6 +410,7 @@ class CopyrightManager:
         return stripped == comment_marker
 
     def delete_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
+        # pylint: disable=too-many-branches too-many-locals too-many-return-statements
         """Delete the copyright header. Prefer removing only the bordered section when present."""
         try:
             content = path.read_text( encoding='utf-8' )
@@ -438,7 +450,8 @@ class CopyrightManager:
                     )
                     footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
                     dbg = lines[ block_start:del_start ] + lines[del_end + 1:block_end + 1]
-                    print(f"{header}{COLOR_GRAY_I}{'\n'.join(dbg)}{COLOR_RESET}{footer}", end="\n")
+                    dbg_output = "\n".join(dbg)
+                    print(f"{header}{COLOR_GRAY_I}{dbg_output}{COLOR_RESET}{footer}", end="\n")
                     return True, 'debug_deleted'
 
                 path.write_text( final_content, encoding='utf-8' )
@@ -489,12 +502,14 @@ class CopyrightManager:
             norm_current = "\n".join( line.strip() for line in current.strip().splitlines() )
 
             if norm_current == norm_expected: return True, 'match'
-            else: return False, 'mismatch'
+            return False, 'mismatch'
         except FileNotFoundError: return False, 'error: file_not_found'
         except Exception as e: return False, f"error: {e}"
 
+    # pylint: disable=too-many-arguments too-many-positional-arguments
     def _insert_copyright( self, path: Path, content: str, formatted_lines: List[str], fmt: str, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         """Inserts the formatted copyright block into the file content."""
+        _ = fmt             # avoid pylint unused-argument, kept for API compatibility
         lines = content.splitlines()
         insert_pos = 0
 
@@ -534,6 +549,7 @@ class CopyrightManager:
         path.write_text( final_content, encoding='utf-8' )
         return True, 'inserted'
 
+    # pylint: disable=too-many-branches too-many-locals
     def update_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         """Update (or add) a copyright header, replacing only the bordered section for bordered formats."""
         try:
@@ -611,17 +627,16 @@ class CopyrightManager:
 
             if status == 'match':
                 return True, 'skipped'
-            elif status == 'mismatch':
+            if status == 'mismatch':
                 return self.update_copyright( path, forced_type, debug=debug, verbose=verbose )
-            elif status == 'not_found':
+            if status == 'not_found':
                 fmt = detect_file_format( path, forced_type )
                 if not fmt: raise ValueError( 'unsupported_format' )
 
                 formatted_lines = self._format_copyright_as_list( fmt )
                 content = path.read_text( encoding='utf-8' )
                 return self._insert_copyright( path, content, formatted_lines, fmt, debug=debug, verbose=verbose )
-            else:
-                raise ValueError( status )
+            raise ValueError( status )
         except FileNotFoundError: return False, 'file_not_found'
         except Exception as e: return False, f"error: {e}"
 
