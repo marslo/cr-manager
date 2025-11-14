@@ -1,0 +1,78 @@
+---
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run semantic-release in dry-run mode (no tag / no push)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write    # allow to create tag / push commit
+  pull-requests: read
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # semantic-release required full history
+          persist-credentials: false       # do not use the default GITHUB_TOKEN for git operations
+
+      - name: Setup git user
+        run: |
+          git config user.name "semantic-release-bot"
+          git config user.email "semantic-release-bot@martynus.net"
+
+      - name: Configure git auth to use PAT
+        run: |
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        env:
+          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Poetry
+        run: |
+          python3 -m pip install --user poetry
+          echo "$HOME/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install semantic-release globally
+        run: |
+          npm install -g \
+            semantic-release \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator \
+            @semantic-release/changelog \
+            @semantic-release/exec \
+            @semantic-release/git \
+            @semantic-release/github
+
+      - name: Run semantic-release
+        env:
+          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          CI: "true"
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            semantic-release --dry-run
+          else
+            semantic-release
+          fi
