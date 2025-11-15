@@ -97,7 +97,7 @@ $ chmod +x cr-manager
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.3
+    rev: v3.0.5
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -106,7 +106,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.3
+    rev: v3.0.5
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -118,7 +118,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.3
+    rev: v3.0.5
     hooks:
       - id: cr-manager
         args: ["--check"]
