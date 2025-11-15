@@ -55,7 +55,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ## Install as Binary
 
-### via pipx
+### via pipx or pip
 
 > [!TIP|label:pipx installation]
 > ```bash
@@ -64,13 +64,17 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 > ```
 
 ```bash
+# -- pipx --
 $ pipx install --force "git+https://github.com/marslo/cr-manager"
-
 # upgrade
 $ pipx upgrade cr-manager
-
-# swith python version
+# switch python version
 $ pipx reinstall cr-manager --python /path/to/python3.x
+
+# -- pip --
+$ python3 -m pip install --user cr-manager
+# upgrade
+$ python3 -m pip install --user --upgrade cr-manager
 ```
 
 ```bash
@@ -93,7 +97,7 @@ $ chmod +x cr-manager
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.1
+    rev: v3.0.3
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -102,7 +106,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.1
+    rev: v3.0.3
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -114,7 +118,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.1
+    rev: v3.0.3
     hooks:
       - id: cr-manager
         args: ["--check"]
