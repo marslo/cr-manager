@@ -45,7 +45,6 @@ $ cr-manager --filetype python /path/to/file.txt
 
 ## Update Existing Copyright Headers
 
-> [!TIP]
 > `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
 
 ```bash
@@ -58,7 +57,6 @@ $ cr-manager --update --recursive /path/to/directory
 
 ## Delete Existing Copyright Headers
 
-> [!TIP]
 > `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
 
 ```bash
@@ -180,10 +178,22 @@ $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/downloa
 ## pre-commit hook
 
 ```yaml
+# if `COPYRIGHT` file can be found in the root directory of this repository
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
     rev: v3.0.3
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+```
+
+```yaml
+# specify the path to the COPYRIGHT file
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.5
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -195,7 +205,7 @@ only check the copyright headers without modifying files after commit
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.3
+    rev: v3.0.5
     hooks:
       - id: cr-manager
         args: ["--check"]
