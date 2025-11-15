@@ -55,18 +55,35 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ## Install as Binary
 
-```bash
-$ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
+### via pipx
 
+> [!TIP|label:pipx installation]
+> ```bash
+> $ python3 -m pip install pipx
+> $ python3 -m pipx ensurepath
+> ```
+
+```bash
+$ pipx install --force "git+https://github.com/marslo/cr-manager"
+
+# upgrade
+$ pipx upgrade cr-manager
+
+# swith python version
+$ pipx reinstall cr-manager --python /path/to/python3.x
+```
+
+```bash
+# -- Linux/MacOS -- #
+$ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
 # linux
 $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
 $ chmod +x cr-manager
-
 # macos
 $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
 $ chmod +x cr-manager
 
-# windows - running in cmd
+# -- Windows - running in cmd -- #
 > powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
 ```
 
