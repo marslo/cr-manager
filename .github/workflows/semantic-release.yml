@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Run semantic-release in dry-run mode (no tag / no push)"
+        description: "dry-run mode"
         required: false
         default: "false"
         type: choice
