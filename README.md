@@ -12,7 +12,6 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - [How to Contribute](#how-to-contribute)
 - [How to Install](#how-to-install)
   - [Install as Binary](#install-as-binary)
-    - [via pipx or pip](#via-pipx-or-pip)
   - [Install as pre-commit Hook](#install-as-pre-commit-hook)
   - [Install as Local Package](#install-as-local-package)
 - [Action Modes](#action-modes)
@@ -56,41 +55,46 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ## Install as Binary
 
-### via pipx or pip
+-  pipx
+  > [!TIP]
+  > - pipx installation
+  >   ```bash
+  >   $ python3 -m pip install pipx
+  >   $ python3 -m pipx ensurepath
+  >   ```
 
-> [!TIP|label:pipx installation]
-> ```bash
-> $ python3 -m pip install pipx
-> $ python3 -m pipx ensurepath
-> ```
+  ```bash
+  $ pipx install --force "git+https://github.com/marslo/cr-manager"
+  # upgrade
+  $ pipx upgrade cr-manager
+  # switch python version
+  $ pipx reinstall cr-manager --python /path/to/python3.x
+  ```
 
-```bash
-# -- pipx --
-$ pipx install --force "git+https://github.com/marslo/cr-manager"
-# upgrade
-$ pipx upgrade cr-manager
-# switch python version
-$ pipx reinstall cr-manager --python /path/to/python3.x
+- pip
+  ```bash
+  $ python3 -m pip install --user cr-manager
+  # upgrade
+  $ python3 -m pip install --user --upgrade cr-manager
+  ```
 
-# -- pip --
-$ python3 -m pip install --user cr-manager
-# upgrade
-$ python3 -m pip install --user --upgrade cr-manager
-```
+- linux/macos binary
+  ```bash
+  $ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
 
-```bash
-# -- Linux/MacOS -- #
-$ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
-# linux
-$ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
-$ chmod +x cr-manager
-# macos
-$ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
-$ chmod +x cr-manager
+  # linux
+  $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
+  $ chmod +x cr-manager
 
-# -- Windows - running in cmd -- #
-> powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
-```
+  # macos
+  $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
+  $ chmod +x cr-manager
+  ```
+
+- windows binary
+  ```bash
+  > powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
+  ```
 
 ## Install as pre-commit Hook
 ```yaml
@@ -267,7 +271,7 @@ $ git commit -m "your commit message"
 
 ## Unsupported Filetype
 ```bash
-$ python -m cli.crm [--update] --filetype python /path/to/file.txt
+$ cr-manager [--update] --filetype python /path/to/file.txt
 ```
 
 ![un-supported filetype](./screenshots/handle-unsupported-filetype.png)

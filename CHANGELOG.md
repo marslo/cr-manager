@@ -1,8 +1,25 @@
 ## [3.0.5](https://github.com/marslo/cr-manager/compare/v3.0.4...v3.0.5) (2025-11-15)
 
+### Docs
+
+* update readme for pypi
+
 ## [3.0.4](https://github.com/marslo/cr-manager/compare/v3.0.3...v3.0.4) (2025-11-15)
 
+### Docs
+
+* create readme for PyPI
+
+### CI
+
+* add workflow for publish to pypi repository
+
 ## [3.0.3](https://github.com/marslo/cr-manager/compare/v3.0.2...v3.0.3) (2025-11-15)
+
+### publish to official pypi repository [cr-manager](https://pypi.org/project/cr-manager)
+### CI
+
+* add workflow for semantic-release
 
 ## [3.0.2](https://github.com/marslo/cr-manager/compare/v3.0.1...v3.0.2) (2025-11-14)
 
