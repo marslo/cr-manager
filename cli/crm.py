@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=broad-exception-caught
+
+""" Manage copyright headers in source code files of various formats. """
 
 import argparse
 import sys
@@ -23,6 +26,7 @@ except ImportError as e:
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
 
+# pylint: disable=too-many-branches,too-many-locals,too-many-statements
 def main():
     """Main function to handle command-line arguments and process files."""
 

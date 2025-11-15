@@ -18,6 +18,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ---
 
+# [How to Contribute](https://github.com/marslo/cr-manager/blob/main/CONTRIBUTING.md)
+
+---
+
 # Action Modes
 
 > without any action mode specified, the default action is to **add** copyright headers.
@@ -57,7 +61,7 @@ $ cr-manager --update --recursive /path/to/directory
 
 ## Delete Existing Copyright Headers
 
-> `--filetype <TYPE>` can be used to force a specific filetype for the update action, overriding auto-detection.
+> `--filetype <TYPE>` can be used to force a specific filetype for the delete action, overriding auto-detection.
 
 ```bash
 # single file
@@ -146,6 +150,45 @@ result
 
 ---
 
+## pre-commit hook
+
+```yaml
+# if `COPYRIGHT` file can be found in the root directory of this repository
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.3
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+```
+
+```yaml
+# specify the path to the COPYRIGHT file
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.5
+    hooks:
+      - id: cr-manager
+        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+```
+
+```yaml
+# only check the copyright headers without modifying files after commit
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.0.5
+    hooks:
+      - id: cr-manager
+        args: ["--check"]
+        stages: [post-commit]
+```
+
+---
+
 # Install
 ## Binary
 
@@ -173,41 +216,4 @@ $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/downloa
 $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
 # Windows - running in cmd
 > powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
-```
-
-## pre-commit hook
-
-```yaml
-# if `COPYRIGHT` file can be found in the root directory of this repository
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.3
-    hooks:
-      - id: cr-manager
-        args: ["--update"]
-```
-
-```yaml
-# specify the path to the COPYRIGHT file
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
-    hooks:
-      - id: cr-manager
-        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
-        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
-```
-
-only check the copyright headers without modifying files after commit
-```yaml
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
-    hooks:
-      - id: cr-manager
-        args: ["--check"]
-        stages: [post-commit]
 ```
