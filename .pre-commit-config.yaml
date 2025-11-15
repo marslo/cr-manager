@@ -40,3 +40,19 @@ repos:
         name: Remove Tabs (4 spaces)
         args: [--whitespaces-count, '4']
         files: '\.py$'
+
+  - repo: https://github.com/pycqa/pylint
+    rev: v4.0.3
+    hooks:
+      - id: pylint
+        name: Pylint
+        args: ["--rcfile=.pylintrc"]
+        types: [python]
+        additional_dependencies: [wcwidth]
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.39.2
+    hooks:
+      - id: typos
+        name: Typos
+        args: ["--write-changes"]

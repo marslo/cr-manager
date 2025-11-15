@@ -9,8 +9,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 ---
 
 - [Features](#features)
-- [Install](#install)
+- [How to Contribute](#how-to-contribute)
+- [How to Install](#how-to-install)
   - [Install as Binary](#install-as-binary)
+    - [via pipx or pip](#via-pipx-or-pip)
   - [Install as pre-commit Hook](#install-as-pre-commit-hook)
   - [Install as Local Package](#install-as-local-package)
 - [Action Modes](#action-modes)
@@ -18,18 +20,13 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - [Running as pre-commit Hooks](#running-as-pre-commit-hooks)
   - [Install pre-commit Hooks](#install-pre-commit-hooks)
   - [Running Manually](#running-manually)
-  - [Running Automatcially](#running-automatcially)
+  - [Running Automatically](#running-automatically)
   - [Unsupported Filetype](#unsupported-filetype)
 - [Running as Binary](#running-as-binary)
   - [Add New Copyright Headers](#add-new-copyright-headers)
   - [Update Existing Copyright Headers](#update-existing-copyright-headers)
   - [Delete Existing Copyright Headers](#delete-existing-copyright-headers)
   - [Debug Mode](#debug-mode)
-- [Running as CLI Tool](#running-as-cli-tool)
-  - [Poetry Setup](#poetry-setup)
-    - [Install Poetry](#install-poetry)
-    - [Init Poetry Environment](#init-poetry-environment)
-    - [Run as CLI](#run-as-cli)
 - [Help Message](#help-message)
 
 ---
@@ -45,13 +42,17 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ---
 
-# Install
+# [How to Contribute](./CONTRIBUTING.md)
+
+---
+
+# How to Install
 
 > [!TIP]
 > - enable the ansicolor in Windows terminal for better output experience.
->> ```batch
->> reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
->> ```
+>   ```batch
+>   reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+>   ```
 
 ## Install as Binary
 
@@ -101,8 +102,10 @@ repos:
     hooks:
       - id: cr-manager
         args: ["--update"]
+```
 
-# or specify the copyright file to use, and only check specific files/folders
+```yaml
+# specify the `COPYRIGHT` file to use, and only check specific files/folders
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
@@ -139,10 +142,6 @@ $ python3 -m pip install --upgrade --user --editable .
 
 # or install via pipx
 $ pipx install --editable [--force] .
-
-# verify
-$ cr-manager --help
-$ cr-manager --version
 ```
 
 ---
@@ -261,7 +260,7 @@ $ pre-commit run cr-manager --files path/to/file
 
 ![run cr-manager --all-files](./screenshots/cr-manager-pre-commit.png)
 
-## Running Automatcially
+## Running Automatically
 ```bash
 $ git commit -m "your commit message"
 ```
@@ -328,85 +327,6 @@ $ cr-manager --update --debug /path/to/file
 # *delete* without modifying files
 $ cr-manager --delete --debug /path/to/file
 ```
-
-# Running as CLI Tool
-
-| COMMAND                                | DESCRIPTION                                                                                                                          |
-|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| `$ poetry run python -m cli.crm <cmd>` | requires `$ poetry install`                                                                                                          |
-| `$ python -m cli.crm <cmd>`            | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                       |
-| `$ cr-manager <cmd>`                   | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`<br>or `pip install --user -e .`<br>or`pipx install .` |
-
-## Poetry Setup
-
-### Install Poetry
-
-| ENVIRONMENT | COMMAND                                                                                       |
-|-------------|-----------------------------------------------------------------------------------------------|
-| linux       | `curl -sSL https://install.python-poetry.org \| python3 -`                                    |
-| windows     | `(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content \| py -` |
-| pip         | `pip install poetry`                                                                          |
-| pipx        | `pipx install poetry`                                                                         |
-| macOS       | `brew install poetry`                                                                         |
-
-### Init Poetry Environment
-
-> [!NOTE]
-> it will:
-> 1. create a virtual environment in the current directory
-> 2. install the `cr-manager` package and its dependencies
-> 3. to enable the pylint in pyproject.toml:
->> ```bash
->> $ poetry add --dev pylint
->> ```
-
-```bash
-$ poetry install
-```
-
-- clean up the poetry environment
-  ```bash
-  $ poetry env remove python
-  # - or -
-  $ poetry env remove --all
-
-  # clear cache
-  $ poetry cache clear pypi --all
-  $ poetry cache clear virtualenvs --all
-  ```
-
-### Run as CLI
-
-- run in the poetry environment
-
-  ```bash
-  $ poetry run python -m cli.crm --help
-  ```
-
-- run in the virtual environment
-
-  > to show/check the current venv:
-  >> ```bash
-  >> $ echo "${VIRTUAL_ENV}"
-  >> /Users/marslo/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13
-  >> ```
-  >
-  > to show the package in current venv
-  >> ```bash
-  >> $ which -a cr-manager
-  >> ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13/bin/cr-manager
-  >> ```
-
-  ```bash
-  # to activate the virtual environment
-  $ source "$(poetry env info --path)/bin/activate"
-
-  # run as cli
-  $ python -m cli.crm --help
-
-  # run as package
-  $ cr-manager --help
-  ```
 
 # Help Message
 
