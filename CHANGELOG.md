@@ -1,3 +1,5 @@
+## [3.0.4](https://github.com/marslo/cr-manager/compare/v3.0.3...v3.0.4) (2025-11-15)
+
 ## [3.0.3](https://github.com/marslo/cr-manager/compare/v3.0.2...v3.0.3) (2025-11-15)
 
 ## [3.0.2](https://github.com/marslo/cr-manager/compare/v3.0.1...v3.0.2) (2025-11-14)
