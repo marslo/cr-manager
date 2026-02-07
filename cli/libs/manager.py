@@ -276,8 +276,13 @@ class CopyrightManager:
         else:                 # bordered format
             box_char = config.get( 'box_char', '=' )
             comment_string = config.get( 'comment_string', '#' )
-            left_border_prefix = ' ' if start_line else comment_string
-            right_border_suffix = comment_string.strip() if start_line else ''
+
+            if start_line:
+                left_border_prefix = ' '
+                right_border_suffix = comment_string.strip()
+            else:
+                left_border_prefix = comment_string.strip() + ' '
+                right_border_suffix = ' ' + comment_string.strip()
 
             border_width = max( 0, LINE_LENGTH - len(left_border_prefix) - len(right_border_suffix) - len(box_char) * 2 )
             border_line  = f"{left_border_prefix}{box_char}{box_char * border_width}{box_char}{right_border_suffix}"
@@ -328,9 +333,7 @@ class CopyrightManager:
         return cr_start, cr_end
 
     def _find_bordered_section( self, lines: List[str], block_start: int, block_end: int, fmt: str ) -> Tuple[int, int]:
-        """Find the start and end line indexes of the bordered copyright section.
-        The pattern here mirrors exactly how _format_copyright_as_list() builds the borders
-        """
+        """Find the start and end line indexes of the bordered copyright section."""
         config = FILE_TYPE_MAP[fmt]['config']
         comment = config.get( 'comment_string', '#' )
         box_char = config.get( 'box_char', '=' )
@@ -343,7 +346,7 @@ class CopyrightManager:
         if start_marker:
             border_re = re.compile( rf"^\s*{box}{{3,}}{right_suffix}\s*$" )
         else:
-            border_re = re.compile( rf"^\s*{left_prefix}\s*{box}{{3,}}\s*$" )
+            border_re = re.compile( rf"^\s*{left_prefix}\s*{box}{{3,}}(?:\s*{right_suffix})?\s*$" )
 
         borders = [ i for i in range(block_start, block_end + 1) if border_re.match(lines[i]) ]
         if len(borders) >= 2: return borders[0], borders[-1]
@@ -410,7 +413,7 @@ class CopyrightManager:
         return stripped == comment_marker
 
     def delete_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
-        # pylint: disable=too-many-branches too-many-locals too-many-return-statements
+        # pylint: disable=too-many-branches,too-many-locals,too-many-return-statements,too-many-statements
         """Delete the copyright header. Prefer removing only the bordered section when present."""
         try:
             content = path.read_text( encoding='utf-8' )
@@ -423,6 +426,9 @@ class CopyrightManager:
 
             config = FILE_TYPE_MAP[fmt]['config']
             is_simple_format = config.get( 'simple_format', False )
+            start_marker = config.get( 'start_line', '' ).strip()
+            end_marker = config.get( 'end_line', '' ).strip()
+
             has_other_info = any( AUTHOR_KEYWORD_PAT.search(line) for line in lines[block_start:block_end + 1] )
 
             del_start, del_end = -1, -1
@@ -431,11 +437,30 @@ class CopyrightManager:
             elif is_simple_format:
                 del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
 
+            # ======================== find the copyright block ========================
             if del_start != -1:
+                # try to merge inwards
                 if del_end + 1 <= block_end and self._is_blank_comment_line( lines[del_end + 1], config ):
                     del_end += 1
                 if del_start - 1 >= block_start and self._is_blank_comment_line( lines[del_start - 1], config ):
                     del_start -= 1
+
+                # groovy/java wrapper clean
+                if start_marker and end_marker:
+                    prefix_is_clean = True
+                    for i in range(block_start, del_start):
+                        if lines[i].strip() != start_marker: prefix_is_clean = False; break
+
+                    suffix_is_clean = True
+                    for i in range(del_end + 1, block_end + 1):
+                        if lines[i].strip() != end_marker: suffix_is_clean = False; break
+
+                    if prefix_is_clean and suffix_is_clean:
+                        del_start = block_start
+                        del_end = block_end
+
+                if del_end + 1 < len(lines) and not lines[del_end + 1].strip():
+                    del_end += 1
 
                 new_lines = lines[:del_start] + lines[del_end + 1:]
                 final_content = '\n'.join( new_lines )
@@ -449,8 +474,9 @@ class CopyrightManager:
                         f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
                     )
                     footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-                    dbg = lines[ block_start:del_start ] + lines[del_end + 1:block_end + 1]
-                    dbg_output = "\n".join(dbg)
+
+                    deleted_snippet = lines[del_start : del_end + 1]
+                    dbg_output = "\n".join(deleted_snippet)
                     print(f"{header}{COLOR_GRAY_I}{dbg_output}{COLOR_RESET}{footer}", end="\n")
                     return True, 'debug_deleted'
 
@@ -460,7 +486,11 @@ class CopyrightManager:
             if has_other_info:
                 return False, 'not_found_in_combined'
 
-            new_lines = lines[ :block_start ] + lines[ block_end + 1: ]
+            remove_end = block_end
+            if remove_end + 1 < len(lines) and not lines[remove_end + 1].strip():
+                remove_end += 1
+
+            new_lines = lines[ :block_start ] + lines[ remove_end + 1: ]
             final_content = '\n'.join( new_lines )
             if content.endswith('\n') and final_content and not final_content.endswith('\n'):
                 final_content += '\n'
@@ -506,7 +536,7 @@ class CopyrightManager:
         except FileNotFoundError: return False, 'error: file_not_found'
         except Exception as e: return False, f"error: {e}"
 
-    # pylint: disable=too-many-arguments too-many-positional-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def _insert_copyright( self, path: Path, content: str, formatted_lines: List[str], fmt: str, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         """Inserts the formatted copyright block into the file content."""
         _ = fmt             # avoid pylint unused-argument, kept for API compatibility
@@ -549,7 +579,7 @@ class CopyrightManager:
         path.write_text( final_content, encoding='utf-8' )
         return True, 'inserted'
 
-    # pylint: disable=too-many-branches too-many-locals
+    # pylint: disable=too-many-branches,too-many-locals
     def update_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         """Update (or add) a copyright header, replacing only the bordered section for bordered formats."""
         try:
