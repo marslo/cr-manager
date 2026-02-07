@@ -102,12 +102,14 @@ $ git checkout -b feature/<short-description>
 
 | COMMAND                                | DESCRIPTION                                                                                                                           |
 |----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `$ poetry run python -m cli.crm <cmd>` | requires `$ poetry install`                                                                                                           |
-| `$ python -m cli.crm <cmd>`            | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                        |
-| `$ cr-manager <cmd>`                   | requires `$ poetry install && source "$(poetry env info --path)/bin/activate"`<br>or `pip install --user -e .`<br>or `pipx install .` |
+| `$ poetry run python -m cli.crm <cmd>` | `$ poetry install`                                                                                                           |
+| `$ python -m cli.crm <cmd>`            | `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                        |
+| `$ cr-manager <cmd>`                   | **choose any :**<ul><li>`$ poetry install && source "$(poetry env info --path)/bin/activate"`</li><li>`$ pip install --user -e .`</li><li>`$ pipx install .`</li></ul> |
 
 
-1. install Poetry if you haven't already:
+1. install Poetry if necessary:
+   <details>
+   <summary>click for details ...</summary>
 
    | ENVIRONMENT | COMMAND                                                                                       |
    |-------------|-----------------------------------------------------------------------------------------------|
@@ -126,6 +128,8 @@ $ git checkout -b feature/<short-description>
    # or
    $ python -m pip install --user poetry
    ```
+   </details>
+
 
 2. Install dependencies:
 
@@ -133,23 +137,30 @@ $ git checkout -b feature/<short-description>
    > 1. create a virtual environment in the current directory
    > 2. install the `cr-manager` package and its dependencies
 
-
    ```bash
    $ poetry install
    ```
 
-   - clean up the poetry environment
-     ```bash
-     $ poetry env remove python
-     # - or -
-     $ poetry env remove --all
+   <details>
+   <summary><b>how to clean up the poetry environment</b></summary>
 
-     # clear cache
-     $ poetry cache clear pypi --all
-     $ poetry cache clear virtualenvs --all
-     ```
+   ```bash
+   $ poetry env remove python
+   # - or -
+   $ poetry env remove --all
+
+   # clear cache
+   $ poetry cache clear pypi --all
+   $ poetry cache clear virtualenvs --all
+   ```
+   </details>
+
 
 3. Activate the virtual environment:
+
+   ```bash
+   $ source "$(poetry env info --path)/bin/activate"
+   ```
 
    - run in the poetry environment
 
@@ -159,17 +170,19 @@ $ git checkout -b feature/<short-description>
 
    - run in the virtual environment
 
-     > - to show/check the current venv:
-     >   ```bash
-     >   $ echo "${VIRTUAL_ENV}"
-     >   /Users/marslo/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13
-     >   ```
-     >
-     > - to show the package in current venv
-     >   ```bash
-     >   $ which -a cr-manager
-     >   ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13/bin/cr-manager
-     >   ```
+     <details>
+     <summary>about <code>${VIRTUAL_ENV}</code></summary>
+
+     ```bash
+     # to show/check the current venv:
+     $ echo "${VIRTUAL_ENV}"
+     ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13
+
+     # to show the package in current venv
+     $ which -a cr-manager
+     ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13/bin/cr-manager
+     ```
+     </details>
 
      ```bash
      # to activate the virtual environment
@@ -200,4 +213,12 @@ $ git rebase main
    $ git push origin feature/<your-branch>
    ```
 
-2. Go to the original repo on GitHub, you should see a prompt to open a PR from your branch.
+2. Go to the original repo on GitHub, you should see a prompt to open a PR from your branch, or using GH CLI:
+
+   ```bash
+   # with gh cli
+   $ gh pr create --base main \
+                  --head feature/<your-branch> \
+                  --title "<title>" \
+                  --body "<description>" \
+   ```

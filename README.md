@@ -55,15 +55,19 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ## Install as Binary
 
--  pipx
-  > [!TIP]
-  > - pipx installation
-  >   ```bash
-  >   $ python3 -m pip install pipx
-  >   $ python3 -m pipx ensurepath
-  >   ```
+- pipx
+
+  <details>
+  <summary><b>how to install pipx ...</b></summary>
 
   ```bash
+  $ python3 -m pip install pipx
+  $ python3 -m pipx ensurepath
+  ```
+  </details>
+
+  ```bash
+  # install from source
   $ pipx install --force "git+https://github.com/marslo/cr-manager"
   # upgrade
   $ pipx upgrade cr-manager
@@ -73,12 +77,16 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 - pip
   ```bash
+  # install from pypi
   $ python3 -m pip install --user cr-manager
   # upgrade
   $ python3 -m pip install --user --upgrade cr-manager
   ```
 
 - linux/macos binary
+  <details>
+  <summary><b>Click to expand ...</b></summary>
+
   ```bash
   $ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
 
@@ -90,49 +98,69 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
   $ chmod +x cr-manager
   ```
+  </details>
 
 - windows binary
+
+  <details>
+  <summary><b>Click to expand ...</b></summary>
+
   ```bash
   > powershell -NoProfile -Command "$v=(Invoke-WebRequest -Uri 'https://api.github.com/repos/marslo/cr-manager/releases/latest' -UseBasicParsing | ConvertFrom-Json).tag_name; Invoke-WebRequest -Uri ('https://github.com/marslo/cr-manager/releases/download/'+$v+'/cr-manager.exe') -OutFile 'cr-manager.exe'; Write-Host ('Downloaded '+$v)"
   ```
+  </details>
+
 
 ## Install as pre-commit Hook
-```yaml
-# if `COPYRIGHT` file can be found in the root directory of this repository
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
-    hooks:
-      - id: cr-manager
-        args: ["--update"]
-```
 
 ```yaml
 # specify the `COPYRIGHT` file to use, and only check specific files/folders
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
-        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
+        args: ["--update", "--copyright", "path/to/COPYRIGHT"]
         files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
 ```
+
+<details>
+<summary>if <code>COPYRIGHT</code> file can be found in the root directory of this repository</summary>
+
+```yaml
+# if `COPYRIGHT` file can be found in the root directory of this repository
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v3.1.0
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+```
+</details>
+
+
+<details>
+<summary>only check the copyright headers without modifying files after commit - <b>post-commit</b> check</summary>
 
 ```yaml
 # only check the copyright headers without modifying files after commit
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--check"]
         stages: [post-commit]
 ```
+</details>
 
 ## Install as Local Package
+
+<details>
+<summary><b>install from local source repo ...</b></summary>
 
 ```bash
 # clone the repo
@@ -147,6 +175,7 @@ $ python3 -m pip install --upgrade --user --editable .
 # or install via pipx
 $ pipx install --editable [--force] .
 ```
+</details>
 
 ---
 
@@ -173,20 +202,18 @@ $ pipx install --editable [--force] .
 |:---------------------------------------------:|:---------------------------:|
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
-```
+```bash
 # without venv
 $ poetry run cr-manager --filetype python
 
-# with venv
+# with venv or install as binary
 $ cr-manager --filetype python
-```
 
-result
-```
-#===============================================================================
-# Copyright © 2025 marslo                                                      #
+# result
+# ============================================================================ #
+# Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
-#===============================================================================
+# ============================================================================ #
 ```
 
 ![Python](./screenshots/ft-py.png)
@@ -201,15 +228,13 @@ result
 # without venv
 $ poetry run cr-manager --filetype java
 
-# with venv
+# with venv or install as binary
 $ cr-manager --filetype groovy
-```
 
-result
-```
+# result
 /**
  *******************************************************************************
- * Copyright © 2025 marslo                                                     *
+ * Copyright © 2026 marslo                                                     *
  * Licensed under the MIT License, Version 2.0                                 *
  *******************************************************************************
 **/
@@ -227,14 +252,12 @@ result
 # without venv
 $ poetry run cr-manager --filetype c
 
-# with venv
+# with venv or install as binary
 $ cr-manager --filetype cpp
-```
 
-result
-```
+# result
 /**
- * Copyright © 2025 marslo
+ * Copyright © 2026 marslo
  * Licensed under the MIT License, Version 2.0
  */
 ```
@@ -289,7 +312,7 @@ $ cr-manager /path/to/file
 $ cr-manager --recursive /path/to/directory
 
 # add to non-supported suffixes with supplied filetype
-# -- e.e. add to .txt files as python files --
+# -- e.g. add to .txt files as python files --
 $ cr-manager --filetype python /path/to/file.txt
 ```
 
@@ -325,7 +348,7 @@ $ cr-manger --delete --recursive /path/to/directory
 # *add* without modifying files
 $ cr-manager --debug /path/to/file
 
-$ *update* without modifying files
+# *update* without modifying files
 $ cr-manager --update --debug /path/to/file
 
 # *delete* without modifying files
