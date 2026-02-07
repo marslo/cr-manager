@@ -102,7 +102,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -113,7 +113,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -125,7 +125,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--check"]
@@ -173,20 +173,18 @@ $ pipx install --editable [--force] .
 |:---------------------------------------------:|:---------------------------:|
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
-```
+```bash
 # without venv
 $ poetry run cr-manager --filetype python
 
 # with venv
 $ cr-manager --filetype python
-```
 
-result
-```
-#===============================================================================
-# Copyright © 2025 marslo                                                      #
+# result
+# ============================================================================ #
+# Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
-#===============================================================================
+# ============================================================================ #
 ```
 
 ![Python](./screenshots/ft-py.png)
@@ -197,19 +195,17 @@ result
 |:-----------------------------------------:|:------------------:|
 | `jenkinsfile`, `groovy`, `gradle`, `java` | `.groovy`, `.java` |
 
-```
+```bash
 # without venv
 $ poetry run cr-manager --filetype java
 
 # with venv
 $ cr-manager --filetype groovy
-```
 
-result
-```
+# result
 /**
  *******************************************************************************
- * Copyright © 2025 marslo                                                     *
+ * Copyright © 2026 marslo                                                     *
  * Licensed under the MIT License, Version 2.0                                 *
  *******************************************************************************
 **/
@@ -223,18 +219,16 @@ result
 |:-------------------------------------------:|:------------------------------------------:|
 | `c`, `cpp`, `c++`, `cxx`, `h`, `hpp`, `hxx` | `.c`, `.cpp`, `.cxx`, `.h`, `.hpp`, `.hxx` |
 
-```
+```bash
 # without venv
 $ poetry run cr-manager --filetype c
 
 # with venv
 $ cr-manager --filetype cpp
-```
 
-result
-```
+# result
 /**
- * Copyright © 2025 marslo
+ * Copyright © 2026 marslo
  * Licensed under the MIT License, Version 2.0
  */
 ```
@@ -325,7 +319,7 @@ $ cr-manger --delete --recursive /path/to/directory
 # *add* without modifying files
 $ cr-manager --debug /path/to/file
 
-$ *update* without modifying files
+# *update* without modifying files
 $ cr-manager --update --debug /path/to/file
 
 # *delete* without modifying files
