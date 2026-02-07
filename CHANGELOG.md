@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/marslo/cr-manager/compare/v3.0.5...v3.1.0) (2026-02-07)
+
+
+### Features
+
+* enhance hash-style border and fix delete artifacts ([f39003f](https://github.com/marslo/cr-manager/commit/f39003f6c9e3d46461fcb1ece3dd1b7dac478df4))
+
 ## [3.0.5](https://github.com/marslo/cr-manager/compare/v3.0.4...v3.0.5) (2025-11-15)
 
 ### Docs
