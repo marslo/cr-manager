@@ -94,14 +94,10 @@ $ cr-manager --delete --debug /path/to/file
 
 ```
 $ cr-manager --filetype python
-```
-
-result
-```
-#===============================================================================
-# Copyright © 2025 marslo                                                      #
+# ============================================================================ #
+# Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
-#===============================================================================
+# ============================================================================ #
 ```
 
 ![Python](https://github.com/marslo/cr-manager/raw/main/screenshots/ft-py.png)
@@ -114,13 +110,9 @@ result
 
 ```
 $ cr-manager --filetype groovy
-```
-
-result
-```
 /**
  *******************************************************************************
- * Copyright © 2025 marslo                                                     *
+ * Copyright © 2026 marslo                                                     *
  * Licensed under the MIT License, Version 2.0                                 *
  *******************************************************************************
 **/
@@ -136,12 +128,8 @@ result
 
 ```
 $ cr-manager --filetype cpp
-```
-
-result
-```
 /**
- * Copyright © 2025 marslo
+ * Copyright © 2026 marslo
  * Licensed under the MIT License, Version 2.0
  */
 ```
@@ -168,7 +156,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -180,7 +168,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.1.0
     hooks:
       - id: cr-manager
         args: ["--check"]
