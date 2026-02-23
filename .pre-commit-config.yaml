@@ -42,7 +42,7 @@ repos:
         files: '\.py$'
 
   - repo: https://github.com/pycqa/pylint
-    rev: v4.0.4
+    rev: v4.0.5
     hooks:
       - id: pylint
         name: Pylint
@@ -51,7 +51,7 @@ repos:
         additional_dependencies: [wcwidth]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.43.3
+    rev: v1
     hooks:
       - id: typos
         name: Typos
