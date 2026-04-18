@@ -1,4 +1,4 @@
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main) [![publish to PyPI](https://github.com/marslo/cr-manager/actions/workflows/publish.yml/badge.svg)](https://github.com/marslo/cr-manager/actions/workflows/publish.yml) [![semantic-release](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml/badge.svg?branch=main)](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml)
 
 ---
 
