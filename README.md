@@ -12,15 +12,15 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - [How to Contribute](#how-to-contribute)
 - [How to Install](#how-to-install)
   - [Install as Binary](#install-as-binary)
+    - [Install bash_completion](#install-bash_completion)
   - [Install as pre-commit Hook](#install-as-pre-commit-hook)
   - [Install as Local Package](#install-as-local-package)
 - [Action Modes](#action-modes)
   - [Supported File Types and Formats](#supported-file-types-and-formats)
 - [Running as pre-commit Hooks](#running-as-pre-commit-hooks)
-  - [Install pre-commit Hooks](#install-pre-commit-hooks)
   - [Running Manually](#running-manually)
   - [Running Automatically](#running-automatically)
-  - [Unsupported Filetype](#unsupported-filetype)
+  - [Running for Unsupported Filetype](#running-for-unsupported-filetype)
 - [Running as Binary](#running-as-binary)
   - [Add New Copyright Headers](#add-new-copyright-headers)
   - [Update Existing Copyright Headers](#update-existing-copyright-headers)
@@ -111,6 +111,39 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   </details>
 
 
+### Install bash_completion
+
+> [!TIP]
+> automatically detect the OS and install bash completion to the appropriate directory:
+> - macos: $(brew --prefix)/etc/bash_completion.d → $XDG_DATA_HOME/.local/share →  ~/.bash_completion.d
+> - linux: $XDG_DATA_HOME/.local/share → ~/.bash_completion.d → /usr/share/bash-completion/completions → /etc/bash_completion.d
+
+```bash
+# macos
+$ cr-manager --install-completion
+# or install manually
+$ cr-manager --completion | tee "$(brew --prefix)/etc/bash_completion.d/cr-manager"
+```
+
+```bash
+# linux user folder
+$ cr-manager --install-completion
+# or install manually
+$ cr-manager --completion | tee ~/.bash_completion.d/cr-manager
+
+# linux system folder (requires sudo)
+$ sudo cr-manager --install-completion
+# or install manually
+$ cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
+```
+
+```bash
+# uninstall
+test -f ~/.bash_completion.d/cr-manager && rm -rf ~/.bash_completion.d/cr-manager
+test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/cr-manager
+[[ 'Darwin' = "$(uname -s)" ]] && test -f "$(brew --prefix)/etc/bash_completion.d/cr-manager" && rm -rf "$(brew --prefix)/etc/bash_completion.d/cr-manager"
+```
+
 ## Install as pre-commit Hook
 
 ```yaml
@@ -186,7 +219,7 @@ $ pipx install --editable [--force] .
 
 | OPTION     | DESCRIPTION                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
-|            | Add mode: Automatically adds copyright headers to files.                    |
+| `--add`    | Add mode: Automatically adds copyright headers to files(default).           |
 | `--check`  | Check mode: Verifies file copyright status (match, mismatch, or not found). |
 | `--delete` | Delete mode: Removes detected copyright headers from files.                 |
 | `--update` | Update mode: Forces replacement of copyright or adds it if missing.         |
@@ -268,10 +301,11 @@ $ cr-manager --filetype cpp
 
 # Running as pre-commit Hooks
 
-## Install pre-commit Hooks
-```bash
-$ pre-commit install --install-hooks
-```
+> [!TIP]
+> - install the pre-commit hooks after adding the configuration to `.pre-commit-config.yaml` file:
+>   ```bash
+>   $ pre-commit install --install-hooks
+>   ```
 
 ## Running Manually
 
@@ -292,7 +326,7 @@ $ pre-commit run cr-manager --files path/to/file
 $ git commit -m "your commit message"
 ```
 
-## Unsupported Filetype
+## Running for Unsupported Filetype
 ```bash
 $ cr-manager [--update] --filetype python /path/to/file.txt
 ```
@@ -307,13 +341,19 @@ $ cr-manager [--update] --filetype python /path/to/file.txt
 ```bash
 # single file
 $ cr-manager /path/to/file
+# or
+$ cr-manager --add /path/to/file
 
 # files recursively in directories
 $ cr-manager --recursive /path/to/directory
+# or
+$ cr-manager --add --recursive /path/to/directory
 
 # add to non-supported suffixes with supplied filetype
 # -- e.g. add to .txt files as python files --
 $ cr-manager --filetype python /path/to/file.txt
+# or
+$ cr-manager --add --filetype python /path/to/file.txt
 ```
 
 ## Update Existing Copyright Headers
@@ -347,6 +387,8 @@ $ cr-manger --delete --recursive /path/to/directory
 ```bash
 # *add* without modifying files
 $ cr-manager --debug /path/to/file
+# or
+$ cr-manager --add --debug /path/to/file
 
 # *update* without modifying files
 $ cr-manager --update --debug /path/to/file
@@ -358,18 +400,19 @@ $ cr-manager --delete --debug /path/to/file
 # Help Message
 
 ```bash
-$ poetry run python3 -m cli.crm --help
-USAGE
-  python3 -m cli.crm [--check | --delete | --update] [--copyright FILE] [--filetype TYPE]
-                     [-r|--recursive] [--debug] [--verbose] [-h|--help] [-v|--version]
-                     FILES ...
+$ cr-manager --help
+USAGE:
+  cr-manager [--add | --check | --delete | --update] [--copyright FILE] [--filetype TYPE] [--recursive]
+             [--debug] [--verbose] [--completion] [--install-completion] [--help] [--version]
+             FILES ...
 
 A tool to automatically add, update, or delete multi-format copyright headers.
 
 POSITIONAL ARGUMENTS:
   FILES ...                 List of target files or directories to process.
 
-ACTION MODES (default is add):
+ACTION MODES:
+  -a, --add                 Add mode: Adds copyright header to files that are missing it (default).
   -c, --check               Check mode: Verifies file copyright status (match, mismatch, or not found).
   -d, --delete              Delete mode: Removes detected copyright headers from files.
   -u, --update              Update mode: Forces replacement of copyright or adds it if missing.
@@ -383,6 +426,9 @@ OPTIONS:
   -r, --recursive           If FILES includes directories, process their contents recursively.
   --debug                   Debug mode: Preview the result of an action without modifying files.
   --verbose                 Show a detailed processing summary.
+  --completion              Print the bash completion script to stdout.
+  --install-completion      Install bash completion to the OS-appropriate directory (auto-detected, no
+                            root needed by default).
   -h, --help                Show this help message and exit.
   -v, --version             Show program's version number and exit.
 ```

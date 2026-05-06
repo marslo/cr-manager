@@ -39,11 +39,11 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
 
     def __init__(self, prog):
         """Initializes the formatter with specific width and indentation settings."""
-        # Get terminal width dynamically, with a fallback to 120.
+        # Get terminal width dynamically, with a fallback to 80.
         try:
-            width = shutil.get_terminal_size(fallback=(120, 24)).columns
+            width = shutil.get_terminal_size(fallback=(80, 24)).columns - 2
         except Exception:              # pylint: disable=broad-exception-caught
-            width = 120
+            width = 80
 
         super().__init__(
             prog,
@@ -75,13 +75,17 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         """Applies bold formatting."""
         return self._colorize( text, COLOR_BOLD )
 
+    def _green( self, text: str ) -> str:
+        """Applies yellow color."""
+        return self._colorize( text, COLOR_GREEN_I )
+
     def _yellow( self, text: str ) -> str:
         """Applies yellow color."""
-        return self._colorize( text, COLOR_YELLOW )
+        return self._colorize( text, COLOR_YELLOW_I )
 
     def _cyan( self, text: str ) -> str:
         """Applies cyan color."""
-        return self._colorize( text, COLOR_CYAN_I )
+        return self._colorize( text, COLOR_CYAN )
 
     def _magenta( self, text: str ) -> str:
         """Applies magenta color."""
@@ -104,9 +108,10 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         Formats the usage block to be compact and always show short and long options
         in a [-s|--long] format.
         """
-        # get the default formatted usage string, but without the "usage: " prefix
-        usage_str = super()._format_usage( usage, actions, groups, prefix=None )
-        usage_str = re.sub( r'^[Uu]sage:\s*', '', usage_str ).strip()
+        # get the default formatted usage string without the "usage: " prefix
+        # passing prefix='' prevents argparse from adding "usage: " at all (it only does so when prefix is None)
+        usage_str = super()._format_usage( usage, actions, groups, prefix='' )
+        usage_str = usage_str.strip()
 
         def get_combined_option(action_string):
             """
@@ -143,7 +148,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
             indent = ' ' * 4  # fallback indent
 
         # reconstruct the usage string with the new alignment
-        output_lines = [ self._bold("USAGE"), line_2 ]
+        output_lines = [ self._bold("USAGE:"), line_2 ]
         for line in lines[1:]:
             stripped_line = line.lstrip()
             if stripped_line:
@@ -224,21 +229,21 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
 
     def _format_action_invocation( self, action: argparse.Action ) -> str:
         """Formats the invocation part of an action ( e.g., '-f, --foo FOO' ) with colors."""
-        # for positional arguments like 'files'
+        # for positional arguments like 'FILES'
         if not action.option_strings:
             metavar = self._format_args( action, action.dest.upper() )
-            return self._cyan( metavar )
+            return self._green( metavar )
 
         # --- NEW, CORRECTED LOGIC ---
         # 1. Join ONLY the option strings (e.g., -t, --filetype) with a comma.
-        option_names = [ self._yellow(s) for s in sorted(action.option_strings, key=len) ]
+        option_names = [ self._cyan(s) for s in sorted(action.option_strings, key=len) ]
         invocation = ', '.join(option_names)
 
         # 2. If the action takes a value, append its metavar with a space.
         if action.nargs != 0:
             metavar = action.metavar or action.dest.upper()
             if metavar:
-                invocation += f" {self._magenta(metavar)}" # Note the leading space
+                invocation += f" {self._yellow(metavar)}" # Note the leading space
 
         return invocation
 

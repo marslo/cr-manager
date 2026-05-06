@@ -6,7 +6,7 @@ declare -r USAGE="
 To setup/clean the Python virtual environment using Poetry
 
 USAGE
-  \$ run.sh [OPTIONS]
+  \$ source run.sh [OPTIONS]
 
 OPTIONS
   -i, --init       initialize the Python virtual environment using Poetry. ( This is the default behavior )
@@ -29,9 +29,20 @@ type -P poetry >/dev/null 2>&1 || {
 }
 
 "${INIT}" && {
-  poetry install;
-  # shellcheck disable=SC1091
-  source "$(poetry env info --path)/bin/activate";
+  poetry install
+  if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    echo -e "\n\033[3;33m>> to run the application:\033[0m"
+    echo -e '  $ poetry run python -m cli.crm --args'
+    echo -e '\n\033[3;33m>> or execute with activating poetry virtual environment:\033[0m'
+    echo -e "  \$ source \"\$(poetry env info --path)/bin/activate\""
+    echo -e "\033[2;3;37m  # and then run the application using python\033[0m"
+    echo -e '  $ python -m cli.crm --args'
+    echo -e "\033[2;3;37m  # or\033[0m"
+    echo -e '  $ cr-manager --args'
+  else
+    # shellcheck source=/dev/null
+    source "$(poetry env info --path)/bin/activate";
+  fi
 }
 
 "${CLEAN}" && {
@@ -39,6 +50,7 @@ type -P poetry >/dev/null 2>&1 || {
   poetry cache clear pypi --all
   poetry cache clear virtualenvs --all
   poetry env remove --all
+  deactivate 2>/dev/null || true
 }
 
 # vim:tabstop=2:softtabstop=2:shiftwidth=2:expandtab:filetype=sh:
