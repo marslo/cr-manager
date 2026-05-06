@@ -55,7 +55,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ## Install as Binary
 
-- pipx
+- pipx - [how to install pipx](https://pipx.pypa.io/stable/how-to/install-pipx/)
 
   <details>
   <summary><b>how to install pipx ...</b></summary>
@@ -219,7 +219,8 @@ $ pipx install --editable [--force] .
 
 | OPTION     | DESCRIPTION                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
-| `--add`    | Add mode: Automatically adds copyright headers to files(default).           |
+|            | Add mode: Automatically adds copyright headers to files (default).          |
+| `--add`    | Add mode: Automatically adds copyright headers to files (default).          |
 | `--check`  | Check mode: Verifies file copyright status (match, mismatch, or not found). |
 | `--delete` | Delete mode: Removes detected copyright headers from files.                 |
 | `--update` | Update mode: Forces replacement of copyright or adds it if missing.         |

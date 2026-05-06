@@ -76,7 +76,7 @@ class ColorHelpFormatter( argparse.HelpFormatter ):
         return self._colorize( text, COLOR_BOLD )
 
     def _green( self, text: str ) -> str:
-        """Applies yellow color."""
+        """Applies green color."""
         return self._colorize( text, COLOR_GREEN_I )
 
     def _yellow( self, text: str ) -> str:
