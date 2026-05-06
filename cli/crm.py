@@ -18,6 +18,7 @@ try:
         COLOR_CYAN_I, COLOR_MAGENTA_I, COLOR_YELLOW_I, COLOR_GREEN_I, COLOR_BLUE_I, COLOR_RED_I
     )
     from .libs.manager import CopyrightManager, get_supported_filetypes
+    from .install_completion import get_completion_text, install_completion
 except ImportError as e:
     print( "ERROR: Failed to import from 'libs' package. Make sure it's accessible and contains helper.py and manager.py." )
     print( f"Details: {e}" )
@@ -50,7 +51,7 @@ def main():
 
     # argument groups for better help output organization
     pos_group    = parser.add_argument_group( COLOR_BOLD + 'POSITIONAL ARGUMENTS' + COLOR_RESET )
-    action_group = parser.add_argument_group( COLOR_BOLD + 'ACTION MODES (default is add)' + COLOR_RESET )
+    action_group = parser.add_argument_group( COLOR_BOLD + 'ACTION MODES' + COLOR_RESET )
     option_group = parser.add_argument_group( COLOR_BOLD + 'OPTIONS' + COLOR_RESET )
 
     # positional arguments
@@ -63,6 +64,7 @@ def main():
 
     # action modes (mutually exclusive)
     action = action_group.add_mutually_exclusive_group()
+    action.add_argument( '--add'    , '-a', action='store_true', help='Add mode: Adds copyright header to files that are missing it (default).' )
     action.add_argument( '--check'  , '-c', action='store_true', help='Check mode: Verifies file copyright status (match, mismatch, or not found).' )
     action.add_argument( '--delete' , '-d', action='store_true', help='Delete mode: Removes detected copyright headers from files.' )
     action.add_argument( '--update' , '-u', action='store_true', help='Update mode: Forces replacement of copyright or adds it if missing.' )
@@ -71,13 +73,24 @@ def main():
     option_group.add_argument( '--copyright'       , metavar='FILE'      , type=Path, default=Path(DEFAULT_COPYRIGHT_FILE), help=f'Specify the copyright template file path (default: {COLOR_MAGENTA_I}{DEFAULT_COPYRIGHT_FILE}{COLOR_RESET}).' )
     option_group.add_argument( '--filetype',  '-t' , metavar='TYPE'      , help=f"Force override a filetype instead of auto-detection.\nIf provided, displays a formatted preview for that type. "
                                                                                 f"Supported: {COLOR_MAGENTA_I}{supported_types_str}{COLOR_RESET}" )
-    option_group.add_argument( '--recursive', '-r' , action='store_true' , help=f"If {COLOR_CYAN_I}FILES{COLOR_RESET} includes directories, process their contents recursively." )
+    option_group.add_argument( '--recursive', '-r' , action='store_true' , help=f"If {COLOR_GREEN_I}FILES{COLOR_RESET} includes directories, process their contents recursively." )
     option_group.add_argument( '--debug'           , action='store_true' , help='Debug mode: Preview the result of an action without modifying files.' )
     option_group.add_argument( '--verbose'         , action='store_true' , help='Show a detailed processing summary.' )
+    option_group.add_argument( '--completion'      , action='store_true' , help='Print the bash completion script to stdout.' )
+    option_group.add_argument( '--install-completion'                    , action='store_true',  help='Install bash completion to the OS-appropriate directory (auto-detected, no root needed by default).' )
     option_group.add_argument( '--help',      '-h' , action='help'       , default=argparse.SUPPRESS, help='Show this help message and exit.' )
     option_group.add_argument( '--version',   '-v' , action='version'    , version=f"cr-manager v{app_version}", help="Show program's version number and exit." )
 
     args = parser.parse_args()
+
+    # ── completion flags: handled before any file processing ────────────────
+    if args.completion:
+        sys.stdout.write( get_completion_text() )
+        sys.exit( 0 )
+
+    if args.install_completion:
+        install_completion()
+        sys.exit( 0 )
 
     # initialize copyright manager
     try:
@@ -86,7 +99,7 @@ def main():
         sys.exit( e.code )
 
     # handle the special case where only --filetype is provided for a format preview
-    is_action_mode = args.check or args.delete or args.update or args.debug # <-- MODIFIED: Added --debug to this check
+    is_action_mode = args.add or args.check or args.delete or args.update or args.debug
     if args.filetype and not args.files and not is_action_mode:
         if args.verbose:
             print( f"{COLOR_DEBUG_I}INFO: Entering format preview mode (since only --filetype was provided)...{COLOR_RESET}", file=sys.stderr )
@@ -174,7 +187,7 @@ def main():
                     elif msg == 'inserted': print( f"{COLOR_GREEN}ADDED{COLOR_RESET}" ); stats['added'] += 1
                 else: raise ValueError( msg )
 
-            else:                       # default action: add
+            else:                       # default action: add (also triggered by --add / -a)
                 success, msg = manager.add_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
                 if msg.startswith( 'debug' ): stats['debug'] += 1
                 elif success:

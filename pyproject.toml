@@ -18,6 +18,9 @@ keywords = ["copyright", "license"]
 packages = [
     { include = "cli" }
 ]
+include = [
+    { path = "cli/completions/cr-manager.bash", format = ["sdist", "wheel"] }
+]
 
 [tool.poetry.scripts]
 cr-manager = "cli.crm:main"
