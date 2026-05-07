@@ -172,12 +172,8 @@ def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional
             if 'bash' in first_line or 'sh' in first_line: return 'hash_comment'
             if 'groovy' in first_line: return 'groovy_style_comment'
 
-    # 5. re-check forced filetype as a potential suffix alias
+    # 5. forced filetype given but matched nothing above — warn and fall through to None
     if filetype:
-        normalized_ft = filetype.lower()
-        for fmt, data in FILE_TYPE_MAP.items():
-            if normalized_ft in data.get( 'filetypes', set() ):
-                return fmt
         print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Forced filetype {COLOR_YELLOW_I}'{filetype}' {COLOR_DEBUG}is not in the known configurations.{COLOR_RESET}", file=sys.stderr )
 
 
@@ -212,11 +208,6 @@ class CopyrightManager:
         """Initializes the manager with the path to the copyright template file."""
         self.copyright_text = self._load_copyright( copyright_path )
         self.supported_types = get_supported_filetypes()
-        self.filetype_map: Dict[str, str] = {}
-        self.suffix_map: Dict[str, str] = {}
-        for fmt, data in FILE_TYPE_MAP.items():
-            for ft in data.get( "filetypes", set() ): self.filetype_map[ft] = fmt
-            for sfx in data.get( "suffixes", set() ): self.suffix_map[sfx] = fmt
 
     @staticmethod
     def _load_copyright( path: Path ) -> str:
@@ -229,6 +220,26 @@ class CopyrightManager:
         except Exception as e:
             print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to read copyright file {COLOR_MAGENTA_I}{path}{COLOR_RESET} - {e}", file=sys.stderr )
             sys.exit(3)
+
+    @staticmethod
+    def _restore_trailing_newline( original: str, new_content: str ) -> str:
+        """Re-add trailing newline if original had one, or if original was empty (new file)."""
+        if new_content and not new_content.endswith('\n'):
+            if original.endswith('\n') or not original:
+                return new_content + '\n'
+        return new_content
+
+    @staticmethod
+    def _debug_preview( action: str, color: str, prep: str, path: Path, lines: List[str], verbose: bool ) -> None:
+        # pylint: disable=too-many-arguments too-many-positional-arguments
+        """Print a standardised debug preview block."""
+        header = (
+            f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {color}{action}{COLOR_RESET} "
+            f"{COLOR_DEBUG}{prep}{COLOR_RESET} {COLOR_MAGENTA}{path} "
+            f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+        )
+        footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
+        print( f"{header}{COLOR_GRAY_I}{chr(10).join(lines)}{COLOR_RESET}{footer}", end="\n" )
 
     def _get_format_from_filetype( self, filetype: str ) -> Optional[str]:
         """Utility to get format key from a filetype string."""
@@ -256,9 +267,8 @@ class CopyrightManager:
 
         target = f"type {COLOR_MAGENTA_I}'{forced_filetype}'" if forced_filetype else f"file {COLOR_MAGENTA_I}'{path}'"
         print( f"{COLOR_CYAN}INFO: {COLOR_DEBUG_I}could not determine a supported format for {target}{COLOR_RESET}", file=sys.stderr )
-        supported_ft_list = get_supported_filetypes()
-        if supported_ft_list:
-            hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_MAGENTA_I}{', '.join(supported_ft_list)}{COLOR_RESET}"
+        if self.supported_types:
+            hint = f"{COLOR_CYAN}HINT: {COLOR_DEBUG}Supported filetypes are: {COLOR_MAGENTA_I}{', '.join(self.supported_types)}{COLOR_RESET}"
             print( hint, file=sys.stderr )
         return None
 
@@ -338,8 +348,9 @@ class CopyrightManager:
 
         return -1, -1
 
-    def _isolate_copyright_in_simple_block( self, lines: List[str], block_start: int, block_end: int ) -> Tuple[int, int]:
+    def _isolate_copyright_in_simple_block( self, lines: List[str], block_start: int, block_end: int, fmt: str ) -> Tuple[int, int]:
         """Finds the precise start and end of the copyright section within a simple block."""
+        comment = FILE_TYPE_MAP[fmt]['config']['comment']
         cr_start = -1
         for i in range( block_start, block_end ):
             if COPYRIGHT_KEYWORD_PAT.search( lines[i] ): cr_start = i; break
@@ -351,7 +362,7 @@ class CopyrightManager:
             line = lines[i]
             if AUTHOR_KEYWORD_PAT.search( line ): break
 
-            line_content = line.strip().lstrip( FILE_TYPE_MAP['c_style_comment']['config']['comment'] ).strip()
+            line_content = line.strip().lstrip( comment ).strip()
             if not line_content: break
 
             cr_end = i
@@ -426,7 +437,7 @@ class CopyrightManager:
 
         config = FILE_TYPE_MAP[fmt]['config']
         if config.get( 'simple_format', False ):
-            cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
+            cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1, fmt )
             if cr_start != -1:
                 return '\n'.join( lines[cr_start : cr_end + 1] )
             return None
@@ -469,8 +480,8 @@ class CopyrightManager:
             del_start, del_end = -1, -1
             if not is_simple_format:
                 del_start, del_end = self._find_bordered_section( lines, block_start, block_end, fmt )
-            elif is_simple_format:
-                del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
+            else:
+                del_start, del_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1, fmt )
 
             # ======================== find the copyright block ========================
             if del_start != -1:
@@ -498,21 +509,10 @@ class CopyrightManager:
                     del_end += 1
 
                 new_lines = lines[:del_start] + lines[del_end + 1:]
-                final_content = '\n'.join( new_lines )
-                if content.endswith('\n') and final_content and not final_content.endswith('\n'):
-                    final_content += '\n'
+                final_content = self._restore_trailing_newline( content, '\n'.join(new_lines) )
 
                 if debug:
-                    header = (
-                        f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} "
-                        f"{COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} "
-                        f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
-                    )
-                    footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-
-                    deleted_snippet = lines[del_start : del_end + 1]
-                    dbg_output = "\n".join(deleted_snippet)
-                    print(f"{header}{COLOR_GRAY_I}{dbg_output}{COLOR_RESET}{footer}", end="\n")
+                    self._debug_preview( 'DELETE', COLOR_RED_I, 'from', path, lines[del_start : del_end + 1], verbose )
                     return True, 'debug_deleted'
 
                 path.write_text( final_content, encoding='utf-8' )
@@ -526,18 +526,10 @@ class CopyrightManager:
                 remove_end += 1
 
             new_lines = lines[ :block_start ] + lines[ remove_end + 1: ]
-            final_content = '\n'.join( new_lines )
-            if content.endswith('\n') and final_content and not final_content.endswith('\n'):
-                final_content += '\n'
+            final_content = self._restore_trailing_newline( content, '\n'.join(new_lines) )
 
             if debug:
-                header = (
-                    f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_RED_I}DELETE{COLOR_RESET} "
-                    f"{COLOR_DEBUG}from{COLOR_RESET} {COLOR_MAGENTA}{path} "
-                    f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
-                )
-                footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-                print( f"{header}{COLOR_GRAY_I}{COLOR_RESET}{footer}", end="\n" )
+                self._debug_preview( 'DELETE', COLOR_RED_I, 'from', path, lines[block_start : remove_end + 1], verbose )
                 return True, 'debug_deleted'
 
             path.write_text( final_content, encoding='utf-8' )
@@ -595,20 +587,10 @@ class CopyrightManager:
             new_lines.append('')
 
         new_lines.extend( lines[insert_pos:] )
-        final_content = '\n'.join( new_lines )
-        if content.endswith('\n') or ( not content and final_content ):
-            if not final_content.endswith('\n'):
-                final_content += '\n'
+        final_content = self._restore_trailing_newline( content, '\n'.join(new_lines) )
 
         if debug:
-            header = (
-                f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_GREEN_I}ADD{COLOR_RESET} "
-                f"{COLOR_DEBUG}to{COLOR_RESET} {COLOR_MAGENTA}{path} "
-                f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else '\n'
-            )
-            footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-            debug_output = '\n'.join( formatted_lines )
-            print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end="\n" )
+            self._debug_preview( 'ADD', COLOR_GREEN_I, 'to', path, formatted_lines, verbose )
             return True, 'debug_added'
 
         path.write_text( final_content, encoding='utf-8' )
@@ -650,34 +632,22 @@ class CopyrightManager:
 
             # Simple formats that contain other info: narrow to the actual subrange
             if is_simple_format and has_other_info:
-                cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1 )
+                cr_start, cr_end = self._isolate_copyright_in_simple_block( lines, block_start, block_end + 1, fmt )
                 if cr_start != -1:
                     replace_start, replace_end = cr_start, cr_end
                     lines_to_insert = self._format_copyright_content_lines( fmt, bordered=False )
 
             if debug:
-                header = (
-                    f"\n{COLOR_DEBUG}--- DEBUG PREVIEW: {COLOR_CYAN_I}UPDATE{COLOR_RESET} "
-                    f"{COLOR_DEBUG}for{COLOR_RESET} {COLOR_MAGENTA}{path} "
-                    f"{COLOR_DEBUG}---{COLOR_RESET}\n" if verbose else "\n"
+                preview = (
+                    lines[block_start:replace_start] + lines_to_insert + lines[replace_end + 1:block_end + 1]
+                    if replace_start != block_start or replace_end != block_end
+                    else new_formatted_lines
                 )
-                footer = f"\n{COLOR_DEBUG}--- END PREVIEW ---{COLOR_RESET}" if verbose else ""
-                if replace_start != block_start or replace_end != block_end:
-                    debug_output_lines = (
-                        lines[block_start:replace_start] +
-                        lines_to_insert +
-                        lines[replace_end + 1:block_end + 1]
-                    )
-                else:
-                    debug_output_lines = new_formatted_lines
-                debug_output = '\n'.join( debug_output_lines )
-                print( f"{header}{COLOR_GRAY_I}{debug_output}{COLOR_RESET}{footer}", end='\n' )
+                self._debug_preview( 'UPDATE', COLOR_CYAN_I, 'for', path, preview, verbose )
                 return True, 'debug_updated'
 
             new_lines = lines[:replace_start] + lines_to_insert + lines[replace_end + 1:]
-            final_content = '\n'.join( new_lines )
-            if content.endswith('\n') and not final_content.endswith('\n'):
-                final_content += '\n'
+            final_content = self._restore_trailing_newline( content, '\n'.join(new_lines) )
 
             path.write_text( final_content, encoding='utf-8' )
             return True, 'updated'
@@ -688,6 +658,9 @@ class CopyrightManager:
     def add_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         """Adds copyright: Skips if match, updates if mismatch, inserts if not found."""
         try:
+            fmt = detect_file_format( path, forced_type )
+            if not fmt: raise ValueError( 'unsupported_format' )
+
             _, status = self.check_copyright_status( path, forced_type )
 
             if status == 'match':
@@ -695,9 +668,6 @@ class CopyrightManager:
             if status == 'mismatch':
                 return self.update_copyright( path, forced_type, debug=debug, verbose=verbose )
             if status == 'not_found':
-                fmt = detect_file_format( path, forced_type )
-                if not fmt: raise ValueError( 'unsupported_format' )
-
                 formatted_lines = self._format_copyright_as_list( fmt )
                 content = path.read_text( encoding='utf-8' )
                 return self._insert_copyright( path, content, formatted_lines, fmt, debug=debug, verbose=verbose )
