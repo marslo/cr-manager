@@ -23,44 +23,79 @@ from .helper import (
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
 
+# simple_format = True → no box; = False → box with box_left + box_char + box_right
+# comment       : core line marker for detection & content stripping (e.g. '#', '*')
+# content_left  : left delimiter of each content line
+# content_right : right delimiter of each content line
+# box_left      : left side of border line   ( simple_format=False only )
+# box_right     : right side of border line  ( simple_format=False only )
+# box_char      : repeated character forming the border run
 FILE_TYPE_MAP = {
+    # ============================================================================ #     → <box_left><box_char*n><box_right>
+    # Copyright © 2026 NAME                                                        #     → <content_left><..CONTENT..><content_right>
+    # Licensed under the NAME License, Version x.y                                 #     → <content_left><..CONTENT..><content_right>
+    # ============================================================================ #     → <box_left><box_char*n><box_right>
     'hash_comment': {
         'filetypes' : { 'python', 'shell', 'bash', 'sh', 'dockerfile' },
         'suffixes'  : { '.sh', '.py', '.dockerfile' },
         'config'    : {
             'start_line'     : '',
             'end_line'       : '',
-            'comment_string' : '#',
+            'comment'        : '#',     # core line marker: used for detection & content stripping
+            'content_left'   : '# ',
+            'content_right'  : ' #',
+            'box_left'       : '# ',
+            'box_right'      : ' #',
             'box_char'       : '=',
             'simple_format'  : False
         }
     },
+    # /**                                                                                → <start_line>
+    #  *******************************************************************************   → <box_left><box_char*n><box_right>
+    #  * Copyright © 2026 NAME                                                       *   → <content_left><..CONTENT..><content_right>
+    #  * Licensed under the NAME License, Version x.y                                *   → <content_left><..CONTENT..><content_right>
+    #  *******************************************************************************   → <box_left><box_char*n><box_right>
+    # **/                                                                                → <end_line>
     'groovy_style_comment': {
         'filetypes' : { 'jenkinsfile', 'groovy', 'gradle', 'java' },
         'suffixes'  : { '.groovy', '.java', '.gradle' },
         'config'    : {
             'start_line'     : '/**',
             'end_line'       : '**/',
-            'comment_string' : '* ',
+            'comment'        : '*',     # core line marker: used for detection & content stripping
+            'content_left'   : ' * ',
+            'content_right'  : ' *',
+            'box_left'       : ' ',
+            'box_right'      : '*',
             'box_char'       : '*',
             'simple_format'  : False
         }
     },
+    # /**                                                                                → <start_line>
+    #  * Copyright © 2026 NAME                                                           → <content_left><..CONTENT..><content_right>
+    #  * Licensed under the NAME License, Version x.y                                    → <content_left><..CONTENT..><content_right>
+    #  */                                                                                → <end_line>
     'c_style_comment': {
         'filetypes' : { 'c', 'cpp', 'c++', 'cxx', 'h', 'hpp', 'hxx' },
         'suffixes'  : { '.c', '.cpp', '.cxx', '.h', '.hpp', '.hxx' },
         'config'    : {
             'start_line'     : '/**',
             'end_line'       : ' */',
-            'comment_string' : ' * ',
-            'box_char'       : '*',
+            'comment'        : '*',     # core line marker: used for detection & content stripping
+            'content_left'   : ' * ',
+            'content_right'  : '',
             'simple_format'  : True
         }
     }
 }
 
 COPYRIGHT_KEYWORD_PAT = re.compile( r'copyright|©|license|licensed', re.I )
-AUTHOR_KEYWORD_PAT = re.compile( r'@author|@date|@brief|@file|@description', re.I )
+AUTHOR_KEYWORD_PAT = re.compile(
+    r'@author|@date|@brief|@file|@description'   # javadoc / doxygen style
+    r'|@since|@update|@version|@usage|@note'      # common shell / project metadata
+    r'|#\s*shellcheck\s',                         # shellcheck directives
+    re.I
+)
 
 # ====================== UTILITY FUNCTIONS (INTERNAL) ======================
 def _parse_modeline(content: str) -> Optional[str]:
@@ -230,33 +265,26 @@ class CopyrightManager:
     def _format_copyright_content_lines( self, fmt: str, bordered: bool ) -> List[str]:
         """Generates just the content lines of a copyright block."""
         config = FILE_TYPE_MAP[fmt]["config"]
-        comment_string = config.get( 'comment_string', '#' )
+        content_left  = config.get( 'content_left',  '# ' )
+        content_right = config.get( 'content_right', ' #' )
         processed_text_lines = _preprocess_copyright_text( self.copyright_text )
         content_lines = []
 
-        if not bordered:      # simple format content
-            line_prefix = comment_string.rstrip() + ' '
-            wrap_width = max( 10, LINE_LENGTH - len(line_prefix) )
+        if not bordered:      # simple format: no box, just a left prefix per line
+            wrap_width = max( 10, LINE_LENGTH - len(content_left) )
             for line in processed_text_lines:
                 if not line:
-                    content_lines.append( comment_string.rstrip() )
+                    content_lines.append( content_left.rstrip() )
                 else:
                     wrapped = textwrap.wrap( line, width=wrap_width, replace_whitespace=False, drop_whitespace=False )
                     for part in wrapped:
-                        content_lines.append( f"{line_prefix}{part}" )
-        else:                 # bordered format content
-            if config.get( "start_line" ):
-                left_content  = ' ' + comment_string.strip() + ' '
-                right_content = ' ' + comment_string.strip()
-            else:
-                left_content  = comment_string + ' '
-                right_content = ' ' + comment_string
-
-            text_width = max( 0, LINE_LENGTH - len(left_content) - len(right_content) )
+                        content_lines.append( f"{content_left}{part}" )
+        else:                 # bordered format: pad text between left and right delimiters
+            text_width = max( 0, LINE_LENGTH - len(content_left) - len(content_right) )
             for line in processed_text_lines:
                 wrapped = textwrap.wrap( line, width=text_width, replace_whitespace=False, drop_whitespace=False ) if line else [""]
                 for part in wrapped:
-                    content_lines.append( f"{left_content}{part.ljust(text_width)}{right_content}" )
+                    content_lines.append( f"{content_left}{part.ljust(text_width)}{content_right}" )
         return content_lines
 
     def _format_copyright_as_list( self, fmt: str ) -> List[str]:
@@ -274,23 +302,21 @@ class CopyrightManager:
         if simple_format:
             full_block.extend( self._format_copyright_content_lines(fmt, bordered=False) )
         else:                 # bordered format
-            box_char = config.get( 'box_char', '=' )
-            comment_string = config.get( 'comment_string', '#' )
+            missing = [ k for k in ('box_char', 'box_left', 'box_right') if k not in config ]
+            if missing:
+                raise ValueError( f"Format '{fmt}' has simple_format=False but is missing required box keys: {missing}" )
 
-            if start_line:
-                left_border_prefix = ' '
-                right_border_suffix = comment_string.strip()
-            else:
-                left_border_prefix = comment_string.strip() + ' '
-                right_border_suffix = ' ' + comment_string.strip()
+            box_char  = config['box_char']
+            box_left  = config['box_left']
+            box_right = config['box_right']
 
-            border_width = max( 0, LINE_LENGTH - len(left_border_prefix) - len(right_border_suffix) - len(box_char) * 2 )
-            border_line  = f"{left_border_prefix}{box_char}{box_char * border_width}{box_char}{right_border_suffix}"
+            box_width = max( 0, LINE_LENGTH - len(box_left) - len(box_right) - len(box_char) * 2 )
+            box_line  = f"{box_left}{box_char}{box_char * box_width}{box_char}{box_right}"
 
             lines = []
-            lines.append( border_line )
+            lines.append( box_line )
             lines.extend( self._format_copyright_content_lines(fmt, bordered=True) )
-            lines.append( border_line )
+            lines.append( box_line )
             full_block.extend( lines )
 
         if end_line: full_block.append( end_line )
@@ -325,7 +351,7 @@ class CopyrightManager:
             line = lines[i]
             if AUTHOR_KEYWORD_PAT.search( line ): break
 
-            line_content = line.strip().lstrip( FILE_TYPE_MAP['c_style_comment']['config']['comment_string'].strip() ).strip()
+            line_content = line.strip().lstrip( FILE_TYPE_MAP['c_style_comment']['config']['comment'] ).strip()
             if not line_content: break
 
             cr_end = i
@@ -335,29 +361,28 @@ class CopyrightManager:
     def _find_bordered_section( self, lines: List[str], block_start: int, block_end: int, fmt: str ) -> Tuple[int, int]:
         """Find the start and end line indexes of the bordered copyright section."""
         config = FILE_TYPE_MAP[fmt]['config']
-        comment = config.get( 'comment_string', '#' )
-        box_char = config.get( 'box_char', '=' )
+        box_char     = config.get( 'box_char', '=' )
         start_marker = config.get( 'start_line', '' )
-
-        right_suffix = re.escape( comment.strip() )
+        c   = re.escape( config.get('comment', '#') )
         box = re.escape( box_char )
-        left_prefix = re.escape( comment.strip() )
 
         if start_marker:
-            border_re = re.compile( rf"^\s*{box}{{3,}}{right_suffix}\s*$" )
+            # groovy: border line is whitespace + box_char run + core marker (e.g. " ****...**")
+            border_re = re.compile( rf"^\s*{box}{{3,}}{c}\s*$" )
         else:
-            border_re = re.compile( rf"^\s*{left_prefix}\s*{box}{{3,}}(?:\s*{right_suffix})?\s*$" )
+            # hash: border line is "# ===...=== #"
+            border_re = re.compile( rf"^\s*{c}\s*{box}{{3,}}(?:\s*{c})?\s*$" )
 
         borders = [ i for i in range(block_start, block_end + 1) if border_re.match(lines[i]) ]
         if len(borders) >= 2: return borders[0], borders[-1]
         return -1, -1
 
     def _find_first_comment_block( self, lines: List[str], search_start_idx: int, fmt: str ) -> Tuple[int, int]:
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals too-many-branches
         """Finds the first continuous block of comments."""
         config = FILE_TYPE_MAP[fmt]['config']
-        start_marker = config.get( 'start_line', '' )
-        comment_string = config.get( 'comment_string', '#' )
+        start_marker   = config.get( 'start_line', '' )
+        comment_marker = config.get( 'comment', '#' )
 
         block_start, in_block = -1, False
 
@@ -374,7 +399,11 @@ class CopyrightManager:
                 if in_block and end_pat.search( stripped_line ):
                     return block_start, i
         else:                 # line comment
-            comment_pat = re.compile( r"^\s*" + re.escape(comment_string.strip()) )
+            # exclude shebang lines (#!) so they don't absorb the first comment block
+            if comment_marker == '#':
+                comment_pat = re.compile( r"^\s*#(?!!)" )
+            else:
+                comment_pat = re.compile( r"^\s*" + re.escape(comment_marker) )
             for i in range( search_start_idx, len(lines) ):
                 line = lines[i]
                 if comment_pat.match( line ):
@@ -401,13 +430,19 @@ class CopyrightManager:
             if cr_start != -1:
                 return '\n'.join( lines[cr_start : cr_end + 1] )
             return None
+
+        # for bordered formats that combine copyright + author info,
+        # narrow to just the bordered copyright section for accurate comparison
+        bs, be = self._find_bordered_section( lines, block_start, block_end, fmt )
+        if bs != -1:
+            return '\n'.join( lines[bs : be + 1] )
         return '\n'.join( lines[block_start : block_end + 1] )
 
     @staticmethod
     def _is_blank_comment_line( line: str, config: Dict ) -> bool:
         """Checks if a line is a blank comment line."""
         stripped = line.strip()
-        comment_marker = config['comment_string'].strip()
+        comment_marker = config.get( 'comment', '' )
         if not comment_marker:
             return not stripped
         return stripped == comment_marker
