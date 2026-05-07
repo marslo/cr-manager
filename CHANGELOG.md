@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/marslo/cr-manager/compare/v3.1.0...v3.2.0) (2026-05-07)
+
+
+### Features
+
+* **bash_completion:** add bash completion for cr-manager ([#27](https://github.com/marslo/cr-manager/issues/27)) ([cbeaa18](https://github.com/marslo/cr-manager/commit/cbeaa180a31d6a6d56a5e364411e4f97e431fb0b))
+
 # [3.1.0](https://github.com/marslo/cr-manager/compare/v3.0.5...v3.1.0) (2026-02-07)
 
 
