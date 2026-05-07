@@ -1,3 +1,9 @@
+## [3.3.2](https://github.com/marslo/cr-manager/compare/v3.3.1...v3.3.2) (2026-05-07)
+
+### Code Refactoring
+
+* isolate source code and configuration, and store configuration files separately in a toml file ([#34](https://github.com/marslo/cr-manager/issues/34)) ([824677b](https://github.com/marslo/cr-manager/commit/824677b502c2d263b0a1cac34a5eb4cc871283c3))
+
 ## [3.3.1](https://github.com/marslo/cr-manager/compare/v3.3.0...v3.3.1) (2026-05-07)
 
 
