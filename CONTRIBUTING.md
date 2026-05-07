@@ -99,6 +99,7 @@ $ git checkout -b feature/<short-description>
 
 > [!TIP]
 > We use [Poetry](https://python-poetry.org/) for dependency management.
+> You can use [`run.sh`](./run.sh) to init and run the project in a Poetry environment via `$ source run.sh`. Check more with `$ bash run.sh --help`
 
 | COMMAND                                | DESCRIPTION                                                                                                                           |
 |----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
@@ -107,7 +108,8 @@ $ git checkout -b feature/<short-description>
 | `$ cr-manager <cmd>`                   | **choose any :**<ul><li>`$ poetry install && source "$(poetry env info --path)/bin/activate"`</li><li>`$ pip install --user -e .`</li><li>`$ pipx install .`</li></ul> |
 
 
-1. install Poetry if necessary:
+1. install Poetry if necessary ( [how to install poetry](https://python-poetry.org/docs/#installation) ):
+
    <details>
    <summary>click for details ...</summary>
 
@@ -131,7 +133,7 @@ $ git checkout -b feature/<short-description>
    </details>
 
 
-2. Install dependencies:
+2. install dependencies:
 
    > it will:
    > 1. create a virtual environment in the current directory
@@ -156,7 +158,7 @@ $ git checkout -b feature/<short-description>
    </details>
 
 
-3. Activate the virtual environment:
+3. activate the virtual environment:
 
    ```bash
    $ source "$(poetry env info --path)/bin/activate"
@@ -198,6 +200,7 @@ $ git checkout -b feature/<short-description>
 ## 4. Keep Your Branch Up to Date
 
 Before opening a PR, sync your branch with the latest main:
+
 ```bash
 $ git fetch upstream
 $ git checkout main
@@ -207,6 +210,7 @@ $ git rebase main
 ```
 
 ## 5. Open a Pull Request
+
 1. Push your branch to your fork:
 
    ```bash
