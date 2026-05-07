@@ -151,7 +151,7 @@ test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.2.1
+    rev: v3.3.0
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "path/to/COPYRIGHT"]
@@ -166,7 +166,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.2.1
+    rev: v3.3.0
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -182,7 +182,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.2.1
+    rev: v3.3.0
     hooks:
       - id: cr-manager
         args: ["--check"]
