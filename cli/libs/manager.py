@@ -14,7 +14,13 @@ import sys
 import textwrap
 import re
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Set
+from typing import Any, List, Dict, Optional, Tuple, Set
+
+try:
+    import tomllib                    # stdlib: Python >= 3.11
+except ImportError:
+    import tomli as tomllib           # type: ignore[no-redef]  # pip: Python < 3.11
+
 from .helper import (
     COLOR_RESET, COLOR_DEBUG, COLOR_YELLOW, COLOR_MAGENTA, COLOR_CYAN, COLOR_RED,
     COLOR_DEBUG_I, COLOR_YELLOW_I, COLOR_MAGENTA_I, COLOR_GRAY_I, COLOR_RED_I, COLOR_CYAN_I, COLOR_GREEN_I,
@@ -23,71 +29,29 @@ from .helper import (
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
 
-# simple_format = True → no box; = False → box with box_left + box_char + box_right
-# comment       : core line marker for detection & content stripping (e.g. '#', '*')
-# content_left  : left delimiter of each content line
-# content_right : right delimiter of each content line
-# box_left      : left side of border line   ( simple_format=False only )
-# box_right     : right side of border line  ( simple_format=False only )
-# box_char      : repeated character forming the border run
-FILE_TYPE_MAP = {
-    # ============================================================================ #     → <box_left><box_char*n><box_right>
-    # Copyright © 2026 NAME                                                        #     → <content_left><..CONTENT..><content_right>
-    # Licensed under the NAME License, Version x.y                                 #     → <content_left><..CONTENT..><content_right>
-    # ============================================================================ #     → <box_left><box_char*n><box_right>
-    'hash_comment': {
-        'filetypes' : { 'python', 'shell', 'bash', 'sh', 'dockerfile' },
-        'suffixes'  : { '.sh', '.py', '.dockerfile' },
-        'config'    : {
-            'start_line'     : '',
-            'end_line'       : '',
-            'comment'        : '#',     # core line marker: used for detection & content stripping
-            'content_left'   : '# ',
-            'content_right'  : ' #',
-            'box_left'       : '# ',
-            'box_right'      : ' #',
-            'box_char'       : '=',
-            'simple_format'  : False
+def _load_file_type_map() -> Dict[str, Any]:
+    """Load format configs from formats.toml (lives alongside this module)."""
+    toml_path = Path(__file__).parent / 'formats.toml'
+    try:
+        with open( toml_path, 'rb' ) as fh:
+            raw = tomllib.load( fh )
+    except FileNotFoundError:
+        print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Format config not found: {COLOR_MAGENTA_I}{toml_path}{COLOR_RESET}", file=sys.stderr )
+        sys.exit(4)
+    except Exception as e:
+        print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to parse {COLOR_MAGENTA_I}{toml_path}{COLOR_RESET} — {e}", file=sys.stderr )
+        sys.exit(5)
+    return {
+        fmt: {
+            'filetypes' : set( data.get('filetypes', []) ),
+            'suffixes'  : set( data.get('suffixes',  []) ),
+            'config'    : data.get('config', {}),
         }
-    },
-    # /**                                                                                → <start_line>
-    #  *******************************************************************************   → <box_left><box_char*n><box_right>
-    #  * Copyright © 2026 NAME                                                       *   → <content_left><..CONTENT..><content_right>
-    #  * Licensed under the NAME License, Version x.y                                *   → <content_left><..CONTENT..><content_right>
-    #  *******************************************************************************   → <box_left><box_char*n><box_right>
-    # **/                                                                                → <end_line>
-    'groovy_style_comment': {
-        'filetypes' : { 'jenkinsfile', 'groovy', 'gradle', 'java' },
-        'suffixes'  : { '.groovy', '.java', '.gradle' },
-        'config'    : {
-            'start_line'     : '/**',
-            'end_line'       : '**/',
-            'comment'        : '*',     # core line marker: used for detection & content stripping
-            'content_left'   : ' * ',
-            'content_right'  : ' *',
-            'box_left'       : ' ',
-            'box_right'      : '*',
-            'box_char'       : '*',
-            'simple_format'  : False
-        }
-    },
-    # /**                                                                                → <start_line>
-    #  * Copyright © 2026 NAME                                                           → <content_left><..CONTENT..><content_right>
-    #  * Licensed under the NAME License, Version x.y                                    → <content_left><..CONTENT..><content_right>
-    #  */                                                                                → <end_line>
-    'c_style_comment': {
-        'filetypes' : { 'c', 'cpp', 'c++', 'cxx', 'h', 'hpp', 'hxx' },
-        'suffixes'  : { '.c', '.cpp', '.cxx', '.h', '.hpp', '.hxx' },
-        'config'    : {
-            'start_line'     : '/**',
-            'end_line'       : ' */',
-            'comment'        : '*',     # core line marker: used for detection & content stripping
-            'content_left'   : ' * ',
-            'content_right'  : '',
-            'simple_format'  : True
-        }
+        for fmt, data in raw.items()
     }
-}
+
+# Format definitions are in cli/libs/formats.toml (loaded at import time).
+FILE_TYPE_MAP: Dict[str, Any] = _load_file_type_map()
 
 COPYRIGHT_KEYWORD_PAT = re.compile( r'copyright|©|license|licensed', re.I )
 AUTHOR_KEYWORD_PAT = re.compile(

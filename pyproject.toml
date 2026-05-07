@@ -19,15 +19,17 @@ packages = [
     { include = "cli" }
 ]
 include = [
-    { path = "cli/completions/cr-manager.bash", format = ["sdist", "wheel"] }
+    { path = "cli/completions/cr-manager.bash", format = ["sdist", "wheel"] },
+    { path = "cli/libs/formats.toml",           format = ["sdist", "wheel"] }
 ]
 
 [tool.poetry.scripts]
 cr-manager = "cli.crm:main"
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python  = ">=3.10"
 wcwidth = "^0.2.13"
+tomli   = { version = "^2.0", python = "<3.11" }
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^4.0.2"
