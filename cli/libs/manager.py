@@ -60,7 +60,12 @@ FILE_TYPE_MAP = {
 }
 
 COPYRIGHT_KEYWORD_PAT = re.compile( r'copyright|©|license|licensed', re.I )
-AUTHOR_KEYWORD_PAT = re.compile( r'@author|@date|@brief|@file|@description', re.I )
+AUTHOR_KEYWORD_PAT = re.compile(
+    r'@author|@date|@brief|@file|@description'    # javadoc / doxygen style
+    r'|@since|@update|@version|@usage|@note'      # common shell / project metadata
+    r'|#\s*shellcheck\s',                         # shellcheck directives
+    re.I
+)
 
 # ====================== UTILITY FUNCTIONS (INTERNAL) ======================
 def _parse_modeline(content: str) -> Optional[str]:
@@ -92,7 +97,7 @@ def get_supported_filetypes() -> List[str]:
     return sorted( list(all_ft) )
 
 def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional[str]:
-    # pylint: disable=too-many-branches too-many-return-statements
+    # pylint: disable=too-many-branches,too-many-return-statements
     """
     Detects the file format.
     Priority order: 1. Forced filetype, 2. Vim modeline, 3. File suffix, 4. Content heuristics.
@@ -353,7 +358,7 @@ class CopyrightManager:
         return -1, -1
 
     def _find_first_comment_block( self, lines: List[str], search_start_idx: int, fmt: str ) -> Tuple[int, int]:
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals,too-many-branches
         """Finds the first continuous block of comments."""
         config = FILE_TYPE_MAP[fmt]['config']
         start_marker = config.get( 'start_line', '' )
@@ -374,7 +379,11 @@ class CopyrightManager:
                 if in_block and end_pat.search( stripped_line ):
                     return block_start, i
         else:                 # line comment
-            comment_pat = re.compile( r"^\s*" + re.escape(comment_string.strip()) )
+            # exclude shebang lines (#!) so they don't absorb the first comment block
+            if comment_string.strip() == '#':
+                comment_pat = re.compile( r"^\s*#(?!!)" )
+            else:
+                comment_pat = re.compile( r"^\s*" + re.escape(comment_string.strip()) )
             for i in range( search_start_idx, len(lines) ):
                 line = lines[i]
                 if comment_pat.match( line ):
@@ -401,6 +410,12 @@ class CopyrightManager:
             if cr_start != -1:
                 return '\n'.join( lines[cr_start : cr_end + 1] )
             return None
+
+        # for bordered formats that combine copyright + author info,
+        # narrow to just the bordered copyright section for accurate comparison
+        bs, be = self._find_bordered_section( lines, block_start, block_end, fmt )
+        if bs != -1:
+            return '\n'.join( lines[bs : be + 1] )
         return '\n'.join( lines[block_start : block_end + 1] )
 
     @staticmethod
@@ -536,8 +551,8 @@ class CopyrightManager:
         except FileNotFoundError: return False, 'error: file_not_found'
         except Exception as e: return False, f"error: {e}"
 
-    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def _insert_copyright( self, path: Path, content: str, formatted_lines: List[str], fmt: str, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
         """Inserts the formatted copyright block into the file content."""
         _ = fmt             # avoid pylint unused-argument, kept for API compatibility
         lines = content.splitlines()
