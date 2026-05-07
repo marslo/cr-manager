@@ -4,6 +4,7 @@
 
 """ Manage copyright headers in source code files of various formats. """
 
+import re
 import argparse
 import sys
 from pathlib import Path
@@ -26,6 +27,22 @@ except ImportError as e:
 
 # default name for the copyright template file
 DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
+
+_ANSI_ESC_RE = re.compile( r'\x1b\[[0-9;]*m' )
+
+def _format_progress_line( counter_c: str, path: Path, status_c: str, total_width: int = 80, min_dots: int = 3 ) -> str:
+    """Format a fixed-width progress line (pre-commit style): counter path ... status."""
+    counter_p = _ANSI_ESC_RE.sub( '', counter_c )
+    status_p  = _ANSI_ESC_RE.sub( '', status_c )
+
+    # max chars the path may occupy so dots stay >= min_dots
+    max_path = total_width - len(counter_p) - 3 - min_dots - len(status_p)
+    path_str = str(path)
+    if len(path_str) > max_path:
+        path_str = ( '...' + path_str[-(max_path - 3):] ) if max_path > 3 else path_str[-max_path:]
+
+    dots_n = max( min_dots, total_width - len(counter_p) - 1 - len(path_str) - 1 - len(status_p) - 1 )
+    return f"{counter_c} {COLOR_MAGENTA_I}{path_str}{COLOR_RESET} {'.' * dots_n} {status_c}"
 
 # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 def main():
@@ -155,59 +172,60 @@ def main():
 
     for path in files_to_process:
         stats["processed"] += 1
-        print( f"{COLOR_DEBUG_I}>> "
-               f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
-               f"{COLOR_YELLOW}{len(files_to_process)}"
-               f"{COLOR_MAGENTA_I} {path} "
-               f"{COLOR_DEBUG_I}... {COLOR_RESET}",
-               end=""
-             )
+        counter_c = (
+            f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
+            f"{COLOR_YELLOW}{len(files_to_process)}{COLOR_RESET}"
+        )
+        status_c, hint = "", ""
 
         try:
             success, msg = False, 'unknown_operation'
             if args.check:
                 success, msg = manager.check_copyright_status( path, forced_type )
-                if msg == 'match': print( f"{COLOR_GREEN}OK" ); stats['matched'] += 1
-                elif msg == 'mismatch': print( f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 1
-                elif msg == 'not_found': print( f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 1
+                if   msg == 'match'    : status_c = f"{COLOR_GREEN}OK{COLOR_RESET}";                 stats['matched'] += 1
+                elif msg == 'mismatch' : status_c = f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}";       exit_code = 1
+                elif msg == 'not_found': status_c = f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}";          exit_code = 1
                 else: raise ValueError( msg )
 
             elif args.delete:
                 success, msg = manager.delete_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ): stats['debug'] += 1
-                elif success: print( f"{COLOR_YELLOW}DELETED{COLOR_RESET}" ); stats['deleted'] += 1
-                elif msg == 'not_found': print( f"{COLOR_DEBUG_I}action: Not found, nothing to delete{COLOR_RESET}" ); stats['skipped'] += 1
+                if   msg.startswith('debug'): status_c = f"{COLOR_DEBUG_I}(preview){COLOR_RESET}";   stats['debug'] += 1
+                elif success              : status_c = f"{COLOR_YELLOW}DELETED{COLOR_RESET}";         stats['deleted'] += 1
+                elif msg == 'not_found'   : status_c = f"{COLOR_DEBUG_I}NOT FOUND{COLOR_RESET}";      stats['skipped'] += 1
                 else: raise ValueError( msg )
 
             elif args.update:
                 success, msg = manager.update_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ): stats['debug'] += 1
+                if   msg.startswith('debug'): status_c = f"{COLOR_DEBUG_I}(preview){COLOR_RESET}";   stats['debug'] += 1
                 elif success:
-                    if msg == 'updated': print( f"{COLOR_CYAN}UPDATED{COLOR_RESET}" ); stats['updated'] += 1
-                    elif msg == 'inserted': print( f"{COLOR_GREEN}ADDED{COLOR_RESET}" ); stats['added'] += 1
+                    if   msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED{COLOR_RESET}";           stats['updated'] += 1
+                    elif msg == 'inserted': status_c = f"{COLOR_GREEN}ADDED{COLOR_RESET}";             stats['added'] += 1
                 else: raise ValueError( msg )
 
-            else:                       # default action: add (also triggered by --add / -a)
+            else:                       # --add / default
                 success, msg = manager.add_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
-                if msg.startswith( 'debug' ): stats['debug'] += 1
+                if   msg.startswith('debug'): status_c = f"{COLOR_DEBUG_I}(preview){COLOR_RESET}";                     stats['debug'] += 1
                 elif success:
-                    if msg == 'skipped': print( f"{COLOR_DEBUG}SKIPPED {COLOR_DEBUG_I}(already exists and matches){COLOR_RESET}" ); stats['skipped'] += 1
-                    elif msg == 'updated': print( f"{COLOR_CYAN}UPDATED {COLOR_DEBUG_I}(due to mismatch){COLOR_RESET}" ); stats['updated'] += 1
-                    elif msg == 'inserted': print( f"{COLOR_CYAN}ADDED{COLOR_RESET}" ); stats['added'] += 1
+                    if   msg == 'skipped' : status_c = f"{COLOR_DEBUG}SKIPPED{COLOR_RESET}";                            stats['skipped'] += 1
+                    elif msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED {COLOR_DEBUG_I}(mismatch){COLOR_RESET}";   stats['updated'] += 1
+                    elif msg == 'inserted': status_c = f"{COLOR_CYAN}ADDED{COLOR_RESET}";                               stats['added'] += 1
                 else: raise ValueError( msg )
 
         except ( ValueError, FileNotFoundError ) as e:
             if 'unsupported_format' in str(e):
-                print( f"{COLOR_YELLOW}UNSUPPORTED{COLOR_RESET}" )
-                print( f"{COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes include: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}" )
+                status_c = f"{COLOR_YELLOW}UNSUPPORTED{COLOR_RESET}"
+                hint = f"  {COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}"
             else:
-                print( f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}{e}{COLOR_RESET}" )
+                status_c = f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}{e}{COLOR_RESET}"
             stats['errors'] += 1
             exit_code = 1
         except Exception as e:
-            print( f"{COLOR_BOLD}UNEXPECTED ERROR: {e}{COLOR_RESET}" )
+            status_c = f"{COLOR_BOLD}UNEXPECTED ERROR: {e}{COLOR_RESET}"
             stats['errors'] += 1
             exit_code = 1
+
+        print( _format_progress_line( counter_c, path, status_c ) )
+        if hint: print( hint )
 
     if args.verbose:
         print( f"\n{COLOR_DEBUG}--------- SUMMARY ---------{COLOR_RESET}" )
