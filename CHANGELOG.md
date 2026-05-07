@@ -1,3 +1,11 @@
+## [3.2.1](https://github.com/marslo/cr-manager/compare/v3.2.0...v3.2.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* resolve the combined header issue for shell script ([#31](https://github.com/marslo/cr-manager/issues/31)) ([85f9740](https://github.com/marslo/cr-manager/commit/85f974090bf1f63ca49055b9051a12aae473b427)), closes [#30](https://github.com/marslo/cr-manager/issues/30)
+* **run.sh:** fix the `run.sh` to handle if the script is sourced or executed, and handle exit/return properly. ([#29](https://github.com/marslo/cr-manager/issues/29)) ([73c58fc](https://github.com/marslo/cr-manager/commit/73c58fce4b168cb3a2244fc14dcb939100376d2d))
+
 # [3.2.0](https://github.com/marslo/cr-manager/compare/v3.1.0...v3.2.0) (2026-05-07)
 
 
