@@ -176,6 +176,7 @@ def main():
             f"{COLOR_GREEN}{stats['processed']}{COLOR_DEBUG_I}/"
             f"{COLOR_YELLOW}{len(files_to_process)}{COLOR_RESET}"
         )
+        path_indent = " " * ( len(str(stats['processed'])) + 1 + len(str(len(files_to_process))) + 1 )
         status_c, hint = "", ""
 
         try:
@@ -207,14 +208,14 @@ def main():
                 if   msg.startswith('debug'): status_c = f"{COLOR_DEBUG_I}(preview){COLOR_RESET}";                     stats['debug'] += 1
                 elif success:
                     if   msg == 'skipped' : status_c = f"{COLOR_DEBUG}SKIPPED{COLOR_RESET}";                            stats['skipped'] += 1
-                    elif msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED {COLOR_DEBUG_I}(mismatch){COLOR_RESET}";   stats['updated'] += 1
+                    elif msg == 'updated' : status_c = f"{COLOR_DEBUG_I}(mismatch) {COLOR_CYAN}UPDATED{COLOR_RESET}";   stats['updated'] += 1
                     elif msg == 'inserted': status_c = f"{COLOR_CYAN}ADDED{COLOR_RESET}";                               stats['added'] += 1
                 else: raise ValueError( msg )
 
         except ( ValueError, FileNotFoundError ) as e:
             if 'unsupported_format' in str(e):
                 status_c = f"{COLOR_YELLOW}UNSUPPORTED{COLOR_RESET}"
-                hint = f"  {COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}"
+                hint = f"{path_indent}{COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}"
             else:
                 status_c = f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}{e}{COLOR_RESET}"
             stats['errors'] += 1
