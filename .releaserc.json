@@ -13,7 +13,19 @@
         { "type": "ci",   "release": "patch" }
       ]
     }],
-    "@semantic-release/release-notes-generator",
+    ["@semantic-release/release-notes-generator", {
+      "preset": "conventionalcommits",
+      "presetConfig": {
+        "types": [
+          { "type": "feat",     "section": "Features",          "hidden": false },
+          { "type": "fix",      "section": "Bug Fixes",         "hidden": false },
+          { "type": "refactor", "section": "Code Refactoring",  "hidden": false },
+          { "type": "perf",     "section": "Performance",       "hidden": false },
+          { "type": "docs",     "section": "Documentation",     "hidden": false },
+          { "type": "ci",       "section": "CI/CD",             "hidden": false }
+        ]
+      }
+    }],
     ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
     ["@semantic-release/exec", { "prepareCmd": "poetry version ${nextRelease.version} && poetry lock && sed -i \"s/rev: v[0-9]*\\.[0-9]*\\.[0-9]*/rev: v${nextRelease.version}/g\" README.md README.PYPI.md" }],
     ["@semantic-release/git", { "assets": ["CHANGELOG.md", "pyproject.toml", "poetry.lock", "README.md", "README.PYPI.md"], "message": "chore(release): v${nextRelease.version}" }],

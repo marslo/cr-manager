@@ -1,6 +1,22 @@
 ## [3.3.1](https://github.com/marslo/cr-manager/compare/v3.3.0...v3.3.1) (2026-05-07)
 
+
+### Code Refactoring
+
+* **output,format:** refactor output format to fixed-width format ( similar to output of pre-commit hook ) ([#33](https://github.com/marslo/cr-manager/issues/33)) ([5d27c73](https://github.com/marslo/cr-manager/commit/5d27c737884ebf980c8cda18a162e06c95773404))
+
 # [3.3.0](https://github.com/marslo/cr-manager/compare/v3.2.1...v3.3.0) (2026-05-07)
+
+
+### Code Refactoring
+
+* **manager.py:** refactor the `FILE_TYPE_MAP` map in manager module, for unified management of the left and right sides of the box ( when `simple_format=False` ) ([#32](https://github.com/marslo/cr-manager/issues/32)) ([d61ed98](https://github.com/marslo/cr-manager/commit/d61ed98d4a0402f5ab309fca9cab608a12430165))
+  * `comment`       : core line marker for detection & content stripping (e.g. `#`, `*`)
+  * `content_left`  : left delimiter of each content line
+  * `content_right` : right delimiter of each content line
+  * `box_left`      : left side of border line (`simple_format=False` only)
+  * `box_right`     : right side of border line (`simple_format=False` only)
+  * `box_char`      : repeated character forming the border run
 
 ## [3.2.1](https://github.com/marslo/cr-manager/compare/v3.2.0...v3.2.1) (2026-05-07)
 
@@ -10,12 +26,28 @@
 * resolve the combined header issue for shell script ([#31](https://github.com/marslo/cr-manager/issues/31)) ([85f9740](https://github.com/marslo/cr-manager/commit/85f974090bf1f63ca49055b9051a12aae473b427)), closes [#30](https://github.com/marslo/cr-manager/issues/30)
 * **run.sh:** fix the `run.sh` to handle if the script is sourced or executed, and handle exit/return properly. ([#29](https://github.com/marslo/cr-manager/issues/29)) ([73c58fc](https://github.com/marslo/cr-manager/commit/73c58fce4b168cb3a2244fc14dcb939100376d2d))
 
+
+### CI/CD
+
+* **workflow:** prompt the runner to `@v6` to prevent the warning `Node.js 20 actions are deprecated` ([#28](https://github.com/marslo/cr-manager/issues/28)) ([ce287dc](https://github.com/marslo/cr-manager/commit/ce287dc4a0402f5ab309fca9cab608a12430165))
+
 # [3.2.0](https://github.com/marslo/cr-manager/compare/v3.1.0...v3.2.0) (2026-05-07)
 
 
 ### Features
 
 * **bash_completion:** add bash completion for cr-manager ([#27](https://github.com/marslo/cr-manager/issues/27)) ([cbeaa18](https://github.com/marslo/cr-manager/commit/cbeaa180a31d6a6d56a5e364411e4f97e431fb0b))
+
+
+### Documentation
+
+* **readme:** update README file, and upgraded the typo pre-commit hook version to `v1.43.3` ([cbe3e18](https://github.com/marslo/cr-manager/commit/cbe3e18f))
+* add badges in readme ([0f9f970](https://github.com/marslo/cr-manager/commit/0f9f9703))
+
+
+### CI/CD
+
+* pre-commit update ([872930b](https://github.com/marslo/cr-manager/commit/872930be))
 
 # [3.1.0](https://github.com/marslo/cr-manager/compare/v3.0.5...v3.1.0) (2026-02-07)
 

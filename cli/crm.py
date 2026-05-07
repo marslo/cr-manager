@@ -35,10 +35,12 @@ def _format_progress_line( counter_c: str, path: Path, status_c: str, total_widt
     counter_p = _ANSI_ESC_RE.sub( '', counter_c )
     status_p  = _ANSI_ESC_RE.sub( '', status_c )
 
-    # max chars the path may occupy so dots stay >= min_dots
-    max_path = total_width - len(counter_p) - 3 - min_dots - len(status_p)
+    # max chars the path may occupy so dots stay >= min_dots; clamp to 0 to avoid negative-index bugs
+    max_path = max( 0, total_width - len(counter_p) - 3 - min_dots - len(status_p) )
     path_str = str(path)
-    if len(path_str) > max_path:
+    if max_path == 0:
+        path_str = ''
+    elif len( path_str ) > max_path:
         path_str = ( '...' + path_str[-(max_path - 3):] ) if max_path > 3 else path_str[-max_path:]
 
     dots_n = max( min_dots, total_width - len(counter_p) - 1 - len(path_str) - 1 - len(status_p) - 1 )
@@ -49,7 +51,7 @@ def main():
     """Main function to handle command-line arguments and process files."""
 
     try:
-        supported_types_str = ', '.join(get_supported_filetypes())
+        supported_types_str = ', '.join( get_supported_filetypes() )
     except Exception:
         supported_types_str = "[Could not load supported types]"
 
@@ -201,6 +203,7 @@ def main():
                 elif success:
                     if   msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED{COLOR_RESET}";           stats['updated'] += 1
                     elif msg == 'inserted': status_c = f"{COLOR_GREEN}ADDED{COLOR_RESET}";             stats['added'] += 1
+                    else: raise ValueError( msg )
                 else: raise ValueError( msg )
 
             else:                       # --add / default
@@ -210,6 +213,7 @@ def main():
                     if   msg == 'skipped' : status_c = f"{COLOR_DEBUG}SKIPPED{COLOR_RESET}";                            stats['skipped'] += 1
                     elif msg == 'updated' : status_c = f"{COLOR_DEBUG_I}(mismatch) {COLOR_CYAN}UPDATED{COLOR_RESET}";   stats['updated'] += 1
                     elif msg == 'inserted': status_c = f"{COLOR_CYAN}ADDED{COLOR_RESET}";                               stats['added'] += 1
+                    else: raise ValueError( msg )
                 else: raise ValueError( msg )
 
         except ( ValueError, FileNotFoundError ) as e:
