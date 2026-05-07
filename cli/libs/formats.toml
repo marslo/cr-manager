@@ -1,0 +1,75 @@
+# ==============================================================================
+# Copyright header format configurations for cr-manager.
+# ==============================================================================
+#
+# Fields (each format's [name.config] table):
+#   comment       : core line marker for detection & content stripping (e.g. '#', '*')
+#   content_left  : left delimiter of each content line  (e.g. '# ', ' * ')
+#   content_right : right delimiter of each content line (e.g. ' #', ' *', '')
+#   box_left      : left side of border line   (simple_format = false only)
+#   box_right     : right side of border line  (simple_format = false only)
+#   box_char      : repeated character forming the border run
+#   simple_format : true  → no box, just content_left-prefixed lines
+#                   false → box_left + box_char*n + box_right framing
+
+# ── hash_comment ──────────────────────────────────────────────────────────────
+# # ============================================================================ #   → <box_left><box_char*n><box_right>
+# # Copyright © 2026 NAME                                                        #   → <content_left><..CONTENT..><content_right>
+# # Licensed under the NAME License, Version x.y                                 #   → <content_left><..CONTENT..><content_right>
+# # ============================================================================ #   → <box_left><box_char*n><box_right>
+
+[hash_comment]
+filetypes = ["python", "shell", "bash", "sh", "dockerfile"]
+suffixes  = [".sh", ".py", ".dockerfile"]
+
+[hash_comment.config]
+start_line    = ""
+end_line      = ""
+comment       = "#"
+content_left  = "# "
+content_right = " #"
+box_left      = "# "
+box_right     = " #"
+box_char      = "="
+simple_format = false
+
+# ── groovy_style_comment ──────────────────────────────────────────────────────
+# /**                                                                                → <start_line>
+#  *******************************************************************************   → <box_left><box_char*n><box_right>
+#  * Copyright © 2026 NAME                                                       *   → <content_left><..CONTENT..><content_right>
+#  * Licensed under the NAME License, Version x.y                                *   → <content_left><..CONTENT..><content_right>
+#  *******************************************************************************   → <box_left><box_char*n><box_right>
+# **/                                                                                → <end_line>
+
+[groovy_style_comment]
+filetypes = ["jenkinsfile", "groovy", "gradle", "java"]
+suffixes  = [".groovy", ".java", ".gradle"]
+
+[groovy_style_comment.config]
+start_line    = "/**"
+end_line      = "**/"
+comment       = "*"
+content_left  = " * "
+content_right = " *"
+box_left      = " "
+box_right     = "*"
+box_char      = "*"
+simple_format = false
+
+# ── c_style_comment ───────────────────────────────────────────────────────────
+# /**                                                                                → <start_line>
+#  * Copyright © 2026 NAME                                                           → <content_left><..CONTENT..>
+#  * Licensed under the NAME License, Version x.y                                    → <content_left><..CONTENT..>
+#  */                                                                                → <end_line>
+
+[c_style_comment]
+filetypes = ["c", "cpp", "c++", "cxx", "h", "hpp", "hxx"]
+suffixes  = [".c", ".cpp", ".cxx", ".h", ".hpp", ".hxx"]
+
+[c_style_comment.config]
+start_line    = "/**"
+end_line      = " */"
+comment       = "*"
+content_left  = " * "
+content_right = ""
+simple_format = true
