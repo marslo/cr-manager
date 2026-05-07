@@ -92,3 +92,4 @@ logs/
 
 # test
 tests/archive.*
+tests/sample.*

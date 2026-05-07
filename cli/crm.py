@@ -150,7 +150,7 @@ def main():
 
     # initialize counters and state
     exit_code = 0
-    stats = { "processed": 0, "skipped": 0, "updated": 0, "added": 0, "deleted": 0, "errors": 0, "debug": 0 }
+    stats = { "processed": 0, "matched": 0, "skipped": 0, "updated": 0, "added": 0, "deleted": 0, "errors": 0, "debug": 0 }
     forced_type = args.filetype.lower() if args.filetype else None
 
     for path in files_to_process:
@@ -167,7 +167,7 @@ def main():
             success, msg = False, 'unknown_operation'
             if args.check:
                 success, msg = manager.check_copyright_status( path, forced_type )
-                if msg == 'match': print( f"{COLOR_GREEN}OK" ); stats['skipped'] += 1
+                if msg == 'match': print( f"{COLOR_GREEN}OK" ); stats['matched'] += 1
                 elif msg == 'mismatch': print( f"{COLOR_YELLOW}NEEDS UPDATE{COLOR_RESET}" ); exit_code = 1
                 elif msg == 'not_found': print( f"{COLOR_YELLOW}NOT FOUND{COLOR_RESET}" ); exit_code = 1
                 else: raise ValueError( msg )
@@ -200,8 +200,6 @@ def main():
             if 'unsupported_format' in str(e):
                 print( f"{COLOR_YELLOW}UNSUPPORTED{COLOR_RESET}" )
                 print( f"{COLOR_BLUE}HINT: {COLOR_DEBUG_I}supported filetypes include: {COLOR_BLUE_I}{supported_types_str}{COLOR_RESET}" )
-            elif 'generate_failed' in str(e):
-                print( f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}Failed to generate copyright for target format{COLOR_RESET}" )
             else:
                 print( f"{COLOR_BOLD}ERROR: {COLOR_DEBUG_I}{e}{COLOR_RESET}" )
             stats['errors'] += 1
@@ -217,7 +215,7 @@ def main():
         if args.debug:
             print( f"{COLOR_DEBUG_I}debug previews shown: {COLOR_CYAN}{stats['debug']}{COLOR_RESET}" )
         elif args.check:
-            print( f"{COLOR_DEBUG_I}MATCHED/OK: {COLOR_GREEN_I}{stats['skipped']}{COLOR_RESET}" )
+            print( f"{COLOR_DEBUG_I}MATCHED/OK: {COLOR_GREEN_I}{stats['matched']}{COLOR_RESET}" )
             print( f"{COLOR_DEBUG_I}needs action/not found: (see logs above){COLOR_RESET}"  )
         else:
             print( f"{COLOR_GRAY}ADDED   : {COLOR_GREEN_I}{stats['added']}{COLOR_RESET}" )
