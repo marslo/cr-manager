@@ -1,7 +1,7 @@
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.0.5
+    rev: v3.3.3
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "COPYRIGHT"]
