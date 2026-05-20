@@ -1,3 +1,14 @@
+## [3.3.3](https://github.com/marslo/cr-manager/compare/v3.3.2...v3.3.3) (2026-05-20)
+
+### Bug Fixes
+
+* **check:** fix false mismatch for bordered copyright formats and skip redundant updates ([ed20238](https://github.com/marslo/cr-manager/commit/ed2023818accc0c5992fe5906ec9fe6ad48e5390)), closes [#36](https://github.com/marslo/cr-manager/issues/36)
+
+### CI/CD
+
+* disable precommit automatic upgrade via PR ([f5eb3cc](https://github.com/marslo/cr-manager/commit/f5eb3ccbf22f53feb3048a849ca986e5e2a34d93))
+* **workflow:** using pre-commit workflow instead of pre-commit application - to disable PR auto creation ([df5eaa9](https://github.com/marslo/cr-manager/commit/df5eaa9c8362717b2528fb6134031c61284021c9))
+
 ## [3.3.2](https://github.com/marslo/cr-manager/compare/v3.3.1...v3.3.2) (2026-05-07)
 
 ### Code Refactoring

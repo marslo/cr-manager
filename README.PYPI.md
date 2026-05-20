@@ -171,7 +171,7 @@ $ cr-manager --filetype cpp
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.3.2
+    rev: v3.3.3
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -182,7 +182,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.3.2
+    rev: v3.3.3
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
@@ -194,7 +194,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v3.3.2
+    rev: v3.3.3
     hooks:
       - id: cr-manager
         args: ["--check"]
