@@ -8,6 +8,18 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ---
 
+[![GitHub Release](https://img.shields.io/github/v/release/marslo/cr-manager?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
+[![GitHub Downloads](https://img.shields.io/github/downloads/marslo/cr-manager/total?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
+![Python](https://img.shields.io/badge/language-python-c7f484?logo=python&logoColor=white)
+[![PyPI version](https://img.shields.io/pypi/v/cr-manager?logo=pypi)](https://pypi.org/project/cr-manager/)
+[![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=Windows&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
+
+---
+
 - [Features](#features)
 - [How to Contribute](#how-to-contribute)
 - [Action Modes](#action-modes)
@@ -166,6 +178,8 @@ $ cr-manager --filetype cpp
 
 ## pre-commit hook
 
+![cr-manager pre-commit hook](https://github.com/marslo/cr-manager/raw/main/screenshots/git-pre-commit-hook.png)
+
 ```yaml
 # if `COPYRIGHT` file can be found in the root directory of this repository
 ---
@@ -235,8 +249,8 @@ $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/downloa
 ## bash completion
 
 > automatically detect the OS and install bash completion to the appropriate directory:
-> - macos: $(brew --prefix)/etc/bash_completion.d → $XDG_DATA_HOME/.local/share →  ~/.bash_completion.d
-> - linux: $XDG_DATA_HOME/.local/share → ~/.bash_completion.d → /usr/share/bash-completion/completions → /etc/bash_completion.d
+> - macos: `$(brew --prefix)/etc/bash_completion.d` → `$XDG_DATA_HOME/.local/share` →  `~/.bash_completion.d`
+> - linux: `$XDG_DATA_HOME/.local/share` → `~/.bash_completion.d` → `/usr/share/bash-completion/completions` → `/etc/bash_completion.d`
 
 ```bash
 # macos

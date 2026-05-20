@@ -1,10 +1,18 @@
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main) [![publish to PyPI](https://github.com/marslo/cr-manager/actions/workflows/publish.yml/badge.svg)](https://github.com/marslo/cr-manager/actions/workflows/publish.yml) [![semantic-release](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml/badge.svg?branch=main)](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml)
-
----
-
 # cr-manager -- the Copyright Header Manager
 
 A tool to automatically **add**, **update**, or **delete** multi-format copyright headers in source files.
+
+---
+
+[![GitHub Release](https://img.shields.io/github/v/release/marslo/cr-manager?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
+[![GitHub Downloads](https://img.shields.io/github/downloads/marslo/cr-manager/total?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
+![Python](https://img.shields.io/badge/language-python-c7f484?logo=python&logoColor=white)
+[![PyPI version](https://img.shields.io/pypi/v/cr-manager?logo=pypi)](https://pypi.org/project/cr-manager/)
+[![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=Windows&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
 
 ---
 
@@ -26,6 +34,11 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   - [Update Existing Copyright Headers](#update-existing-copyright-headers)
   - [Delete Existing Copyright Headers](#delete-existing-copyright-headers)
   - [Debug Mode](#debug-mode)
+- [Format Configuration](#format-configuration)
+  - [Config Fields](#config-fields)
+  - [Format Modes](#format-modes)
+  - [Modifying an Existing Format](#modifying-an-existing-format)
+  - [Adding a New Format](#adding-a-new-format)
 - [Help Message](#help-message)
 
 ---
@@ -115,8 +128,8 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 > [!TIP]
 > automatically detect the OS and install bash completion to the appropriate directory:
-> - macos: $(brew --prefix)/etc/bash_completion.d → $XDG_DATA_HOME/.local/share →  ~/.bash_completion.d
-> - linux: $XDG_DATA_HOME/.local/share → ~/.bash_completion.d → /usr/share/bash-completion/completions → /etc/bash_completion.d
+> - macos: `$(brew --prefix)/etc/bash_completion.d` → `$XDG_DATA_HOME/.local/share` →  `~/.bash_completion.d`
+> - linux: `$XDG_DATA_HOME/.local/share` → `~/.bash_completion.d` → `/usr/share/bash-completion/completions` → `/etc/bash_completion.d`
 
 ```bash
 # macos
@@ -308,6 +321,8 @@ $ cr-manager --filetype cpp
 >   $ pre-commit install --install-hooks
 >   ```
 
+![git commit with pre-commit hook](./screenshots/git-pre-commit-hook.png)
+
 ## Running Manually
 
 > [!TIP]
@@ -397,6 +412,92 @@ $ cr-manager --update --debug /path/to/file
 # *delete* without modifying files
 $ cr-manager --delete --debug /path/to/file
 ```
+
+---
+
+# Format Configuration
+
+All comment-style definitions live in [`cli/libs/formats.toml`](./cli/libs/formats.toml) — **no hardcoded formats in the source code**. The engine loads this file at startup and builds every format automatically, so adding or tweaking a style never requires code changes.
+
+## Config Fields
+
+| FIELD           | DESCRIPTION                                                          |
+| --------------- | -------------------------------------------------------------------- |
+| `start_line`    | Opening wrapper line (e.g. `/**`). Empty for line-comment formats.   |
+| `end_line`      | Closing wrapper line (e.g. `**/`). Empty for line-comment formats.   |
+| `comment`       | Core comment marker for detection (e.g. `#`, `*`).                   |
+| `content_left`  | Left delimiter of each content line (e.g. `# `, ` * `).              |
+| `content_right` | Right delimiter of each content line (e.g. ` #`, ` *`, or empty).    |
+| `box_left`      | Left side of the border line (`simple_format = false` only).         |
+| `box_right`     | Right side of the border line (`simple_format = false` only).        |
+| `box_char`      | Repeated character forming the border (e.g. `=`, `*`).               |
+| `simple_format` | `true` → no border box; `false` → bordered with `box_char` framing.  |
+
+## Format Modes
+
+There are two rendering modes controlled by `simple_format`:
+
+**Bordered** (`simple_format = false`) — content is framed between `box_char` border lines:
+
+```
+# ============================================================================ #   ← border
+# Copyright © 2026 marslo                                                      #   ← content
+# ============================================================================ #   ← border
+```
+
+**Simple** (`simple_format = true`) — content lines only, no border:
+
+```
+/**                           ← start_line
+ * Copyright © 2026 marslo    ← content
+ */                           ← end_line
+```
+
+## Modifying an Existing Format
+
+Edit the corresponding `[name.config]` table in `formats.toml`. For example, to switch the Python/Shell format from `=` borders to `*` borders:
+
+```toml
+# change these two fields in [hash_comment.config]
+box_char = "*"      # was "="
+```
+
+Then preview the result:
+
+```bash
+$ cr-manager --filetype python
+```
+
+## Adding a New Format
+
+Append a new section to `formats.toml` — no code changes required:
+
+```toml
+[xml_comment]
+filetypes = ["xml", "html", "xhtml"]
+suffixes  = [".xml", ".html", ".xhtml"]
+
+[xml_comment.config]
+start_line    = "<!--"
+end_line      = "-->"
+comment       = ""
+content_left  = "  "
+content_right = ""
+simple_format = true
+```
+
+Verify with:
+
+```bash
+$ cr-manager --filetype xml
+# <!--
+#   Copyright © 2026 marslo
+#   Licensed under the MIT License, Version 2.0
+# -->
+```
+
+The new format is immediately available for all action modes (`--add`, `--check`, `--update`, `--delete`).
+
 
 # Help Message
 
