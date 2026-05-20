@@ -1,3 +1,9 @@
+## [3.3.4](https://github.com/marslo/cr-manager/compare/v3.3.3...v3.3.4) (2026-05-20)
+
+### Documentation
+
+* add `Format Configuration` in readme; update screenshots ([696d8bd](https://github.com/marslo/cr-manager/commit/696d8bdd899915ea0cefe9f7e50a43f6a28b307d))
+
 ## [3.3.3](https://github.com/marslo/cr-manager/compare/v3.3.2...v3.3.3) (2026-05-20)
 
 ### Bug Fixes
