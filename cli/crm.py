@@ -30,7 +30,7 @@ DEFAULT_COPYRIGHT_FILE = "COPYRIGHT"
 
 _ANSI_ESC_RE = re.compile( r'\x1b\[[0-9;]*m' )
 
-def _format_progress_line( counter_c: str, path: Path, status_c: str, total_width: int = 80, min_dots: int = 3 ) -> str:
+def _format_progress_line( counter_c: str, path: Path, status_c: str, total_width: int = 79, min_dots: int = 3 ) -> str:
     """Format a fixed-width progress line (pre-commit style): counter path ... status."""
     counter_p = _ANSI_ESC_RE.sub( '', counter_c )
     status_p  = _ANSI_ESC_RE.sub( '', status_c )
@@ -201,8 +201,9 @@ def main():
                 success, msg = manager.update_copyright( path, forced_type, debug=args.debug, verbose=args.verbose )
                 if   msg.startswith('debug'): status_c = f"{COLOR_DEBUG_I}(preview){COLOR_RESET}";   stats['debug'] += 1
                 elif success:
-                    if   msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED{COLOR_RESET}";           stats['updated'] += 1
-                    elif msg == 'inserted': status_c = f"{COLOR_GREEN}ADDED{COLOR_RESET}";             stats['added'] += 1
+                    if   msg == 'skipped' : status_c = f"{COLOR_DEBUG}SKIPPED{COLOR_RESET}";           stats['skipped'] += 1
+                    elif msg == 'updated' : status_c = f"{COLOR_CYAN}UPDATED{COLOR_RESET}";            stats['updated'] += 1
+                    elif msg == 'inserted': status_c = f"{COLOR_GREEN}ADDED{COLOR_RESET}";              stats['added'] += 1
                     else: raise ValueError( msg )
                 else: raise ValueError( msg )
 

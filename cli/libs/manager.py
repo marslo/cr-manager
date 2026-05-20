@@ -416,6 +416,21 @@ class CopyrightManager:
             return not stripped
         return stripped == comment_marker
 
+    def _is_copyright_match( self, current: str, fmt: str, formatted_lines: Optional[List[str]] = None ) -> bool:
+        """Compare existing copyright text against expected output, ignoring wrapper lines and trailing whitespace."""
+        config = FILE_TYPE_MAP[fmt]['config']
+        if config.get( 'simple_format', False ):
+            norm_expected = "\n".join( line.strip() for line in self._format_copyright_content_lines(fmt, bordered=False) )
+        else:
+            exp = list( formatted_lines or self._format_copyright_as_list(fmt) )
+            start_line = config.get( 'start_line', '' )
+            end_line   = config.get( 'end_line',   '' )
+            if start_line and exp and exp[0] == start_line: exp.pop(0)
+            if end_line and exp and exp[-1] == end_line: exp.pop()
+            norm_expected = "\n".join( line.strip() for line in exp )
+        norm_current = "\n".join( line.strip() for line in current.strip().splitlines() )
+        return norm_current == norm_expected
+
     def delete_copyright( self, path: Path, forced_type: Optional[str] = None, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         # pylint: disable=too-many-branches,too-many-locals,too-many-return-statements,too-many-statements
         """Delete the copyright header. Prefer removing only the bordered section when present."""
@@ -508,15 +523,7 @@ class CopyrightManager:
             current = self._get_current_copyright( content, fmt )
             if not current: return False, 'not_found'
 
-            config = FILE_TYPE_MAP[fmt]['config']
-            if config.get( 'simple_format', False ):
-                norm_expected = "\n".join( line.strip() for line in self._format_copyright_content_lines(fmt, bordered=False) )
-            else:
-                norm_expected = "\n".join( line.strip() for line in self._format_copyright_as_list(fmt) )
-
-            norm_current = "\n".join( line.strip() for line in current.strip().splitlines() )
-
-            if norm_current == norm_expected: return True, 'match'
+            if self._is_copyright_match( current, fmt ): return True, 'match'
             return False, 'mismatch'
         except FileNotFoundError: return False, 'error: file_not_found'
         except Exception as e: return False, f"error: {e}"
@@ -563,6 +570,11 @@ class CopyrightManager:
 
             new_formatted_lines = self._format_copyright_as_list( fmt )
             content = path.read_text( encoding='utf-8' )
+            current = self._get_current_copyright( content, fmt )
+
+            if current and self._is_copyright_match( current, fmt, new_formatted_lines ):
+                return True, 'skipped'
+
             lines = content.splitlines()
 
             block_start, block_end = self._detect_copyright_block( lines, fmt )
@@ -619,17 +631,17 @@ class CopyrightManager:
             fmt = detect_file_format( path, forced_type )
             if not fmt: raise ValueError( 'unsupported_format' )
 
-            _, status = self.check_copyright_status( path, forced_type )
+            content = path.read_text( encoding='utf-8' )
+            current = self._get_current_copyright( content, fmt )
 
-            if status == 'match':
-                return True, 'skipped'
-            if status == 'mismatch':
-                return self.update_copyright( path, forced_type, debug=debug, verbose=verbose )
-            if status == 'not_found':
+            if not current:
                 formatted_lines = self._format_copyright_as_list( fmt )
-                content = path.read_text( encoding='utf-8' )
                 return self._insert_copyright( path, content, formatted_lines, fmt, debug=debug, verbose=verbose )
-            raise ValueError( status )
+
+            if self._is_copyright_match( current, fmt ):
+                return True, 'skipped'
+
+            return self.update_copyright( path, forced_type, debug=debug, verbose=verbose )
         except FileNotFoundError: return False, 'file_not_found'
         except Exception as e: return False, f"error: {e}"
 
