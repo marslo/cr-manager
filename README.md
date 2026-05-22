@@ -6,11 +6,11 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 [![GitHub Release](https://img.shields.io/github/v/release/marslo/cr-manager?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
 [![GitHub Downloads](https://img.shields.io/github/downloads/marslo/cr-manager/total?logo=github)](https://github.com/marslo/cr-manager/releases/latest)
-![Python](https://img.shields.io/badge/language-python-c7f484?logo=python&logoColor=white)
-[![PyPI version](https://img.shields.io/pypi/v/cr-manager?logo=pypi)](https://pypi.org/project/cr-manager/)
-[![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
+![Python](https://img.shields.io/badge/language-python-c7f484?logo=python&logoColor=ffdd54)
+[![PyPI version](https://img.shields.io/pypi/v/cr-manager?logo=pypi&logoColor=ffdd54)](https://pypi.org/project/cr-manager/)
+[![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=ffdd54)](https://pypi.org/project/cr-manager/)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=F0F0F)](https://github.com/marslo/cr-manager/releases/latest)
 [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=Windows&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
 ![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
 
