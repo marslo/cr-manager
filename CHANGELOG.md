@@ -1,3 +1,15 @@
+## [4.0.0](https://github.com/marslo/cr-manager/compare/v3.3.4...v4.0.0) (2026-05-26)
+
+### ⚠ BREAKING CHANGES
+
+* update the license type
+
+Signed-off-by: marslo <marslo.jiao@gmail.com>
+
+### Documentation
+
+* update the license type ([376ff05](https://github.com/marslo/cr-manager/commit/376ff05b12713318bd9772d082379e9332a80e9f))
+
 ## [3.3.4](https://github.com/marslo/cr-manager/compare/v3.3.3...v3.3.4) (2026-05-20)
 
 ### Documentation
