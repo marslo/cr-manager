@@ -52,6 +52,44 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - Supports recursive directory traversal and filetype auto-detection or override.
 - Supports combined author-info and copyright headers.
 
+
+## Format and Filetypes
+
+<table><thead>
+  <tr>
+    <th align="center"><b>FORMAT</b></th>
+    <th align="center"><b>FILETYPE</b></th>
+    <th align="center"><b>SUFFIXES</b></th>
+  </tr></thead>
+<tbody>
+  <tr>
+      <td valign="middle"><pre><code># ========================== #
+# Copyright © 2026 Marslo    #
+# Licensed under MIT         #
+# ========================== #</code></pre></td>
+      <td valign="middle"><code>python</code><br><code>shell</code><br><code>bash</code><br><code>sh</code><br><code>dockerfile</code></td>
+      <td valign="middle"><code>.py</code><br><code>.sh</code><br><code>.dockerfile</code></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ *****************************
+ * Copyright © 2026 Marslo   *
+ * Licensed under MIT        *
+ *****************************
+**/</code></pre></td>
+      <td valign="middle"><code>jenkinsfile</code><br><code>groovy</code><br><code>gradle</code><br><code>java</code></td>
+      <td valign="middle"><code>.groovy</code><br><code>.java</code></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ * Copyright © 2026 Marslo
+ * Licensed under MIT
+ */</code></pre></td>
+      <td valign="middle"><code>c</code><br><code>cpp</code><br><code>c++</code><br><code>cxx</code><br><code>h</code><br><code>hpp</code><br><code>hxx</code></td>
+      <td valign="middle"><code>.c</code><br><code>.cpp</code><br><code>.cxx</code><br><code>.hpp</code><br><code>.hxx</code></td>
+  </tr>
+</tbody></table>
+
 ---
 
 # [How to Contribute](./CONTRIBUTING.md)
@@ -152,7 +190,7 @@ $ cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
 
 ```bash
 # uninstall
-test -f ~/.bash_completion.d/cr-manager && rm -rf ~/.bash_completion.d/cr-manager
+test -f ~/.bash_completion.d/cr-manager   && rm -rf ~/.bash_completion.d/cr-manager
 test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/cr-manager
 [[ 'Darwin' = "$(uname -s)" ]] && test -f "$(brew --prefix)/etc/bash_completion.d/cr-manager" && rm -rf "$(brew --prefix)/etc/bash_completion.d/cr-manager"
 ```
@@ -250,18 +288,24 @@ $ pipx install --editable [--force] .
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
 ```bash
-# without venv
-$ poetry run cr-manager --filetype python
-
-# with venv or install as binary
-$ cr-manager --filetype python
-
-# result
 # ============================================================================ #
 # Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
 # ============================================================================ #
 ```
+
+<details>
+<summary><b>Click to expand ...</b></summary>
+
+```bash
+# without venv
+$ poetry run cr-manager --filetype python
+
+# with venv or install as binary
+$ cr-manager --filetype python
+```
+
+</details>
 
 ![Python](./screenshots/ft-py.png)
 
@@ -271,14 +315,8 @@ $ cr-manager --filetype python
 |:-----------------------------------------:|:------------------:|
 | `jenkinsfile`, `groovy`, `gradle`, `java` | `.groovy`, `.java` |
 
-```
-# without venv
-$ poetry run cr-manager --filetype java
 
-# with venv or install as binary
-$ cr-manager --filetype groovy
-
-# result
+```groovy
 /**
  *******************************************************************************
  * Copyright © 2026 marslo                                                     *
@@ -286,6 +324,18 @@ $ cr-manager --filetype groovy
  *******************************************************************************
 **/
 ```
+
+<details>
+<summary><b>Click to expand ...</b></summary>
+
+```
+# without venv
+$ poetry run cr-manager --filetype java
+
+# with venv or install as binary
+$ cr-manager --filetype groovy
+```
+</details>
 
 ![java-groovy](./screenshots/ft-java-groovy.png)
 
@@ -295,19 +345,24 @@ $ cr-manager --filetype groovy
 |:-------------------------------------------:|:------------------------------------------:|
 | `c`, `cpp`, `c++`, `cxx`, `h`, `hpp`, `hxx` | `.c`, `.cpp`, `.cxx`, `.h`, `.hpp`, `.hxx` |
 
+```c
+/**
+ * Copyright © 2026 marslo
+ * Licensed under the MIT License, Version 2.0
+ */
+```
+
+<details>
+<summary><b>Click to expand ...</b></summary>
+
 ```
 # without venv
 $ poetry run cr-manager --filetype c
 
 # with venv or install as binary
 $ cr-manager --filetype cpp
-
-# result
-/**
- * Copyright © 2026 marslo
- * Licensed under the MIT License, Version 2.0
- */
 ```
+</details>
 
 ![c/cpp](./screenshots/ft-cpp.png)
 
