@@ -11,20 +11,21 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 [![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
 [![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=Windows&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
-![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%252024%252024%2522%2520fill%253D%2522%2523ffffff%2522%253E%253Cpath%2520d%253D%2522M0%25200h11.377v11.372H0Zm12.623%25200H24v11.372H12.623ZM0%252012.628h11.377V24H0Zm12.623%25200H24V24H12.623Z%2522%252F%253E%253C%252Fsvg%253E)](https://github.com/marslo/cr-manager/releases/latest)
+![License](assets/license-marvell.svg)
 
 ---
 
-- [Features](#features)
+- [Features and Format](#features-and-format)
 - [How to Contribute](#how-to-contribute)
+  - [Format Configuration](./CONTRIBUTING.md#format-configuration)
+- [Format and Filetypes](#format-and-filetypes)
 - [How to Install](#how-to-install)
   - [Install as Binary](#install-as-binary)
     - [Install bash_completion](#install-bash_completion)
   - [Install as pre-commit Hook](#install-as-pre-commit-hook)
   - [Install as Local Package](#install-as-local-package)
 - [Action Modes](#action-modes)
-  - [Supported File Types and Formats](#supported-file-types-and-formats)
 - [Running as pre-commit Hooks](#running-as-pre-commit-hooks)
   - [Running Manually](#running-manually)
   - [Running Automatically](#running-automatically)
@@ -34,16 +35,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   - [Update Existing Copyright Headers](#update-existing-copyright-headers)
   - [Delete Existing Copyright Headers](#delete-existing-copyright-headers)
   - [Debug Mode](#debug-mode)
-- [Format Configuration](#format-configuration)
-  - [Config Fields](#config-fields)
-  - [Format Modes](#format-modes)
-  - [Modifying an Existing Format](#modifying-an-existing-format)
-  - [Adding a New Format](#adding-a-new-format)
 - [Help Message](#help-message)
-
 ---
 
-# Features
+# Features and Format
 
 - **Add**: Insert copyright headers for multiple file types.
 - **Update**: Force update or insert headers if missing.
@@ -51,6 +46,49 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
 - Supports combined author-info and copyright headers.
+
+> [!TIP]
+> - check format details in [Supported File Types and Formats](#supported-file-types-and-formats)
+> - modify or add new format check: [Format Configuration](./CONTRIBUTING.md#format-configuration) | [Modifying an Existing Format](./CONTRIBUTING.md#modifying-an-existing-format) | [Adding a New Format](./CONTRIBUTING.md#adding-a-new-format)
+
+<table><thead>
+  <tr>
+    <th align="center"><b>FORMAT</b></th>
+    <th align="center"><b>FILETYPE</b></th>
+    <th align="center"><b>SUFFIXES</b></th>
+    <th align="center" width="600"><b>SCREENSHOT</b></th>
+  </tr></thead>
+<tbody>
+  <tr>
+      <td valign="middle"><pre><code># ========================== #
+# Copyright © 2026 Marslo    #
+# Licensed under MIT         #
+# ========================== #</code></pre></td>
+      <td valign="middle"><code>python</code><br><code>shell</code><br><code>bash</code><br><code>sh</code><br><code>dockerfile</code></td>
+      <td valign="middle"><code>.py</code><br><code>.sh</code><br><code>.dockerfile</code></td>
+      <td valign="middle" width="600"><img src="assets/ft-py.png" alt="python screenshot"></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ *****************************
+ * Copyright © 2026 Marslo   *
+ * Licensed under MIT        *
+ *****************************
+**/</code></pre></td>
+      <td valign="middle"><code>jenkinsfile</code><br><code>groovy</code><br><code>gradle</code><br><code>java</code></td>
+      <td valign="middle"><code>.groovy</code><br><code>.java</code></td>
+      <td valign="middle" width="600"><img src="assets/ft-java-groovy.png" alt="jenkinsfile/groovy screenshot"></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ * Copyright © 2026 Marslo
+ * Licensed under MIT
+ */</code></pre></td>
+      <td valign="middle"><code>c</code><br><code>cpp</code><br><code>c++</code><br><code>cxx</code><br><code>h</code><br><code>hpp</code><br><code>hxx</code></td>
+      <td valign="middle"><code>.c</code><br><code>.cpp</code><br><code>.cxx</code><br><code>.hpp</code><br><code>.hxx</code></td>
+      <td valign="middle" width="600"><img src="assets/ft-cpp.png" alt="c/cpp screenshot"></td>
+  </tr>
+</tbody></table>
 
 ---
 
@@ -152,7 +190,7 @@ $ cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
 
 ```bash
 # uninstall
-test -f ~/.bash_completion.d/cr-manager && rm -rf ~/.bash_completion.d/cr-manager
+test -f ~/.bash_completion.d/cr-manager   && rm -rf ~/.bash_completion.d/cr-manager
 test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/cr-manager
 [[ 'Darwin' = "$(uname -s)" ]] && test -f "$(brew --prefix)/etc/bash_completion.d/cr-manager" && rm -rf "$(brew --prefix)/etc/bash_completion.d/cr-manager"
 ```
@@ -250,20 +288,26 @@ $ pipx install --editable [--force] .
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
 ```bash
-# without venv
-$ poetry run cr-manager --filetype python
-
-# with venv or install as binary
-$ cr-manager --filetype python
-
-# result
 # ============================================================================ #
 # Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
 # ============================================================================ #
 ```
 
-![Python](./screenshots/ft-py.png)
+<details>
+<summary><b>Click to expand ...</b></summary>
+
+```bash
+# without venv
+$ poetry run cr-manager --filetype python
+
+# with venv or install as binary
+$ cr-manager --filetype python
+```
+
+</details>
+
+![Python](./assets/ft-py.png)
 
 ---
 
@@ -271,14 +315,8 @@ $ cr-manager --filetype python
 |:-----------------------------------------:|:------------------:|
 | `jenkinsfile`, `groovy`, `gradle`, `java` | `.groovy`, `.java` |
 
-```
-# without venv
-$ poetry run cr-manager --filetype java
 
-# with venv or install as binary
-$ cr-manager --filetype groovy
-
-# result
+```groovy
 /**
  *******************************************************************************
  * Copyright © 2026 marslo                                                     *
@@ -287,7 +325,19 @@ $ cr-manager --filetype groovy
 **/
 ```
 
-![java-groovy](./screenshots/ft-java-groovy.png)
+<details>
+<summary><b>Click to expand ...</b></summary>
+
+```
+# without venv
+$ poetry run cr-manager --filetype java
+
+# with venv or install as binary
+$ cr-manager --filetype groovy
+```
+</details>
+
+![java-groovy](./assets/ft-java-groovy.png)
 
 ---
 
@@ -295,21 +345,26 @@ $ cr-manager --filetype groovy
 |:-------------------------------------------:|:------------------------------------------:|
 | `c`, `cpp`, `c++`, `cxx`, `h`, `hpp`, `hxx` | `.c`, `.cpp`, `.cxx`, `.h`, `.hpp`, `.hxx` |
 
-```
-# without venv
-$ poetry run cr-manager --filetype c
-
-# with venv or install as binary
-$ cr-manager --filetype cpp
-
-# result
+```c
 /**
  * Copyright © 2026 marslo
  * Licensed under the MIT License, Version 2.0
  */
 ```
 
-![c/cpp](./screenshots/ft-cpp.png)
+<details>
+<summary><b>Click to expand ...</b></summary>
+
+```
+# without venv
+$ poetry run cr-manager --filetype c
+
+# with venv or install as binary
+$ cr-manager --filetype cpp
+```
+</details>
+
+![c/cpp](./assets/ft-cpp.png)
 
 ---
 
@@ -321,7 +376,7 @@ $ cr-manager --filetype cpp
 >   $ pre-commit install --install-hooks
 >   ```
 
-![git commit with pre-commit hook](./screenshots/git-pre-commit-hook.png)
+![git commit with pre-commit hook](./assets/git-pre-commit-hook.png)
 
 ## Running Manually
 
@@ -335,7 +390,7 @@ $ pre-commit run cr-manager --all-files
 $ pre-commit run cr-manager --files path/to/file
 ```
 
-![run cr-manager --all-files](./screenshots/cr-manager-pre-commit.png)
+![run cr-manager --all-files](./assets/cr-manager-pre-commit.png)
 
 ## Running Automatically
 ```bash
@@ -347,7 +402,7 @@ $ git commit -m "your commit message"
 $ cr-manager [--update] --filetype python /path/to/file.txt
 ```
 
-![un-supported filetype](./screenshots/handle-unsupported-filetype.png)
+![un-supported filetype](./assets/handle-unsupported-filetype.png)
 
 ---
 
@@ -414,90 +469,6 @@ $ cr-manager --delete --debug /path/to/file
 ```
 
 ---
-
-# Format Configuration
-
-All comment-style definitions live in [`cli/libs/formats.toml`](./cli/libs/formats.toml) — **no hardcoded formats in the source code**. The engine loads this file at startup and builds every format automatically, so adding or tweaking a style never requires code changes.
-
-## Config Fields
-
-| FIELD           | DESCRIPTION                                                          |
-| --------------- | -------------------------------------------------------------------- |
-| `start_line`    | Opening wrapper line (e.g. `/**`). Empty for line-comment formats.   |
-| `end_line`      | Closing wrapper line (e.g. `**/`). Empty for line-comment formats.   |
-| `comment`       | Core comment marker for detection (e.g. `#`, `*`).                   |
-| `content_left`  | Left delimiter of each content line (e.g. `# `, ` * `).              |
-| `content_right` | Right delimiter of each content line (e.g. ` #`, ` *`, or empty).    |
-| `box_left`      | Left side of the border line (`simple_format = false` only).         |
-| `box_right`     | Right side of the border line (`simple_format = false` only).        |
-| `box_char`      | Repeated character forming the border (e.g. `=`, `*`).               |
-| `simple_format` | `true` → no border box; `false` → bordered with `box_char` framing.  |
-
-## Format Modes
-
-There are two rendering modes controlled by `simple_format`:
-
-**Bordered** (`simple_format = false`) — content is framed between `box_char` border lines:
-
-```
-# ============================================================================ #   ← border
-# Copyright © 2026 marslo                                                      #   ← content
-# ============================================================================ #   ← border
-```
-
-**Simple** (`simple_format = true`) — content lines only, no border:
-
-```
-/**                           ← start_line
- * Copyright © 2026 marslo    ← content
- */                           ← end_line
-```
-
-## Modifying an Existing Format
-
-Edit the corresponding `[name.config]` table in `formats.toml`. For example, to switch the Python/Shell format from `=` borders to `*` borders:
-
-```toml
-# change these two fields in [hash_comment.config]
-box_char = "*"      # was "="
-```
-
-Then preview the result:
-
-```bash
-$ cr-manager --filetype python
-```
-
-## Adding a New Format
-
-Append a new section to `formats.toml` — no code changes required:
-
-```toml
-[xml_comment]
-filetypes = ["xml", "html", "xhtml"]
-suffixes  = [".xml", ".html", ".xhtml"]
-
-[xml_comment.config]
-start_line    = "<!--"
-end_line      = "-->"
-comment       = ""
-content_left  = "  "
-content_right = ""
-simple_format = true
-```
-
-Verify with:
-
-```bash
-$ cr-manager --filetype xml
-# <!--
-#   Copyright © 2026 marslo
-#   Licensed under the MIT License, Version 2.0
-# -->
-```
-
-The new format is immediately available for all action modes (`--add`, `--check`, `--update`, `--delete`).
-
 
 # Help Message
 

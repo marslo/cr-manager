@@ -1,3 +1,25 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Contributing to `cr-manager`](#contributing-to-cr-manager)
+- [What is `cr-manager`?](#what-is-cr-manager)
+- [Code of Conduct](#code-of-conduct)
+- [Coding Style](#coding-style)
+- [Checklist](#checklist)
+- [How to Contribute](#how-to-contribute)
+  - [1. Fork & Clone](#1-fork--clone)
+  - [2. Set Up Feature Branch](#2-set-up-feature-branch)
+  - [3. Setup Your Environment](#3-setup-your-environment)
+  - [4. Keep Your Branch Up to Date](#4-keep-your-branch-up-to-date)
+  - [5. Open a Pull Request](#5-open-a-pull-request)
+- [Format Configuration](#format-configuration)
+  - [Config Fields](#config-fields)
+  - [Format Modes](#format-modes)
+  - [Modifying an Existing Format](#modifying-an-existing-format)
+  - [Adding a New Format](#adding-a-new-format)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Contributing to `cr-manager`
 
 Thanks for your interest in contributing to **cr-manager**! 🙌
@@ -16,6 +38,11 @@ This document explains how to set up your environment, propose changes, and open
   - [3. Setup Your Environment](#3-setup-your-environment)
   - [4. Keep Your Branch Up to Date](#4-keep-your-branch-up-to-date)
   - [5. Open a Pull Request](#5-open-a-pull-request)
+- [Format Configuration](#format-configuration)
+  - [Config Fields](#config-fields)
+  - [Format Modes](#format-modes)
+  - [Modifying an Existing Format](#modifying-an-existing-format)
+  - [Adding a New Format](#adding-a-new-format)
 
 ---
 
@@ -226,3 +253,88 @@ $ git rebase main
                   --title "<title>" \
                   --body "<description>" \
    ```
+
+---
+
+# Format Configuration
+
+All comment-style definitions live in [`cli/libs/formats.toml`](./cli/libs/formats.toml) — **no hardcoded formats in the source code**. The engine loads this file at startup and builds every format automatically, so adding or tweaking a style never requires code changes.
+
+## Config Fields
+
+| FIELD           | DESCRIPTION                                                          |
+| --------------- | -------------------------------------------------------------------- |
+| `start_line`    | Opening wrapper line (e.g. `/**`). Empty for line-comment formats.   |
+| `end_line`      | Closing wrapper line (e.g. `**/`). Empty for line-comment formats.   |
+| `comment`       | Core comment marker for detection (e.g. `#`, `*`).                   |
+| `content_left`  | Left delimiter of each content line (e.g. `# `, ` * `).              |
+| `content_right` | Right delimiter of each content line (e.g. ` #`, ` *`, or empty).    |
+| `box_left`      | Left side of the border line (`simple_format = false` only).         |
+| `box_right`     | Right side of the border line (`simple_format = false` only).        |
+| `box_char`      | Repeated character forming the border (e.g. `=`, `*`).               |
+| `simple_format` | `true` → no border box; `false` → bordered with `box_char` framing.  |
+
+## Format Modes
+
+There are two rendering modes controlled by `simple_format`:
+
+**Bordered** (`simple_format = false`) — content is framed between `box_char` border lines:
+
+```
+# ============================================================================ #   ← border
+# Copyright © 2026 marslo                                                      #   ← content
+# ============================================================================ #   ← border
+```
+
+**Simple** (`simple_format = true`) — content lines only, no border:
+
+```
+/**                           ← start_line
+ * Copyright © 2026 marslo    ← content
+ */                           ← end_line
+```
+
+## Modifying an Existing Format
+
+Edit the corresponding `[name.config]` table in `formats.toml`. For example, to switch the Python/Shell format from `=` borders to `*` borders:
+
+```toml
+# change these two fields in [hash_comment.config]
+box_char = "*"      # was "="
+```
+
+Then preview the result:
+
+```bash
+$ cr-manager --filetype python
+```
+
+## Adding a New Format
+
+Append a new section to `formats.toml` — no code changes required:
+
+```toml
+[xml_comment]
+filetypes = ["xml", "html", "xhtml"]
+suffixes  = [".xml", ".html", ".xhtml"]
+
+[xml_comment.config]
+start_line    = "<!--"
+end_line      = "-->"
+comment       = ""
+content_left  = "  "
+content_right = ""
+simple_format = true
+```
+
+Verify with:
+
+```bash
+$ cr-manager --filetype xml
+# <!--
+#   Copyright © 2026 marslo
+#   Licensed under the MIT License, Version 2.0
+# -->
+```
+
+The new format is immediately available for all action modes (`--add`, `--check`, `--update`, `--delete`).

@@ -15,8 +15,8 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 [![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
 [![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=Windows&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
-![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%252024%252024%2522%2520fill%253D%2522%2523ffffff%2522%253E%253Cpath%2520d%253D%2522M0%25200h11.377v11.372H0Zm12.623%25200H24v11.372H12.623ZM0%252012.628h11.377V24H0Zm12.623%25200H24V24H12.623Z%2522%252F%253E%253C%252Fsvg%253E)](https://github.com/marslo/cr-manager/releases/latest)
+![License](https://github.com/marslo/cr-manager/raw/main/assets/license-marvell.svg)
 
 ---
 
@@ -44,6 +44,41 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
 - Supports combined author-info and copyright headers.
+
+<table><thead>
+  <tr>
+    <th align="center"><b>FORMAT</b></th>
+    <th align="center"><b>FILETYPE</b></th>
+    <th align="center"><b>SUFFIXES</b></th>
+  </tr></thead>
+<tbody>
+  <tr>
+      <td valign="middle"><pre><code># ========================== #
+# Copyright © 2026 Marslo    #
+# Licensed under MIT         #
+# ========================== #</code></pre></td>
+      <td valign="middle"><code>python</code><br><code>shell</code><br><code>bash</code><br><code>sh</code><br><code>dockerfile</code></td>
+      <td valign="middle"><code>.py</code><br><code>.sh</code><br><code>.dockerfile</code></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ *****************************
+ * Copyright © 2026 Marslo   *
+ * Licensed under MIT        *
+ *****************************
+**/</code></pre></td>
+      <td valign="middle"><code>jenkinsfile</code><br><code>groovy</code><br><code>gradle</code><br><code>java</code></td>
+      <td valign="middle"><code>.groovy</code><br><code>.java</code></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>/**
+ * Copyright © 2026 Marslo
+ * Licensed under MIT
+ */</code></pre></td>
+      <td valign="middle"><code>c</code><br><code>cpp</code><br><code>c++</code><br><code>cxx</code><br><code>h</code><br><code>hpp</code><br><code>hxx</code></td>
+      <td valign="middle"><code>.c</code><br><code>.cpp</code><br><code>.cxx</code><br><code>.hpp</code><br><code>.hxx</code></td>
+  </tr>
+</tbody></table>
 
 ---
 
@@ -130,15 +165,14 @@ $ cr-manager --delete --debug /path/to/file
 |:---------------------------------------------:|:---------------------------:|
 | `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
 
-```
-$ cr-manager --filetype python
+```bash
 # ============================================================================ #
 # Copyright © 2026 marslo                                                      #
 # Licensed under the MIT License, Version 2.0                                  #
 # ============================================================================ #
 ```
 
-![Python](https://github.com/marslo/cr-manager/raw/main/screenshots/ft-py.png)
+![Python](https://github.com/marslo/cr-manager/raw/main/assets/ft-py.png)
 
 ---
 
@@ -146,8 +180,7 @@ $ cr-manager --filetype python
 |:-----------------------------------------:|:------------------:|
 | `jenkinsfile`, `groovy`, `gradle`, `java` | `.groovy`, `.java` |
 
-```
-$ cr-manager --filetype groovy
+```groovy
 /**
  *******************************************************************************
  * Copyright © 2026 marslo                                                     *
@@ -156,7 +189,7 @@ $ cr-manager --filetype groovy
 **/
 ```
 
-![java-groovy](https://github.com/marslo/cr-manager/raw/main/screenshots/ft-java-groovy.png)
+![java-groovy](https://github.com/marslo/cr-manager/raw/main/assets/ft-java-groovy.png)
 
 ---
 
@@ -164,21 +197,20 @@ $ cr-manager --filetype groovy
 |:-------------------------------------------:|:------------------------------------------:|
 | `c`, `cpp`, `c++`, `cxx`, `h`, `hpp`, `hxx` | `.c`, `.cpp`, `.cxx`, `.h`, `.hpp`, `.hxx` |
 
-```
-$ cr-manager --filetype cpp
+```c
 /**
  * Copyright © 2026 marslo
  * Licensed under the MIT License, Version 2.0
  */
 ```
 
-![c/cpp](https://github.com/marslo/cr-manager/raw/main/screenshots/ft-cpp.png)
+![c/cpp](https://github.com/marslo/cr-manager/raw/main/assets/ft-cpp.png)
 
 ---
 
 ## pre-commit hook
 
-![cr-manager pre-commit hook](https://github.com/marslo/cr-manager/raw/main/screenshots/git-pre-commit-hook.png)
+![cr-manager pre-commit hook](https://github.com/marslo/cr-manager/raw/main/assets/git-pre-commit-hook.png)
 
 ```yaml
 # if `COPYRIGHT` file can be found in the root directory of this repository
