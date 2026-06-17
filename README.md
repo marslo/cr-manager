@@ -198,7 +198,7 @@ test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/
 ## Install as pre-commit Hook
 
 ```yaml
-# specify the `COPYRIGHT` file to use, and only check specific files/folders
+# install with git repo
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
@@ -206,6 +206,21 @@ repos:
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "path/to/COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+```
+
+```yaml
+# install with local repo + pypi package
+---
+repos:
+  - repo: local
+    hooks:
+      - id: cr-manager
+        name: cr-manager
+        language: python
+        additional_dependencies: ["cr-manager==4.0.0"]
+        entry: cr-manager
+        args: ["--update", "--copyright", "COPYRIGHT"]
         files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
 ```
 

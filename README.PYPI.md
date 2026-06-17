@@ -1,4 +1,12 @@
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main) [![publish to PyPI](https://github.com/marslo/cr-manager/actions/workflows/publish.yml/badge.svg)](https://github.com/marslo/cr-manager/actions/workflows/publish.yml) [![semantic-release](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml/badge.svg?branch=main)](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/marslo/cr-manager/main.svg)](https://results.pre-commit.ci/latest/github/marslo/cr-manager/main)
+[![publish to PyPI](https://github.com/marslo/cr-manager/actions/workflows/publish.yml/badge.svg)](https://github.com/marslo/cr-manager/actions/workflows/publish.yml)
+[![semantic-release](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml/badge.svg?branch=main)](https://github.com/marslo/cr-manager/actions/workflows/semantic-release.yml)
+
+
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%252024%252024%2522%2520fill%253D%2522%2523ffffff%2522%253E%253Cpath%2520d%253D%2522M0%25200h11.377v11.372H0Zm12.623%25200H24v11.372H12.623ZM0%252012.628h11.377V24H0Zm12.623%25200H24V24H12.623Z%2522%252F%253E%253C%252Fsvg%253E)](https://github.com/marslo/cr-manager/releases/latest)
+![License](https://github.com/marslo/cr-manager/raw/main/assets/license-marvell.svg)
 
 ---
 
@@ -13,14 +21,10 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 ![Python](https://img.shields.io/badge/language-python-c7f484?logo=python&logoColor=white)
 [![PyPI version](https://img.shields.io/pypi/v/cr-manager?logo=pypi)](https://pypi.org/project/cr-manager/)
 [![Install with pipx](https://img.shields.io/badge/install%20with-pipx-4B8BBE?logo=python&logoColor=white)](https://pypi.org/project/cr-manager/)
-[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/marslo/cr-manager/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/marslo/cr-manager/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%252024%252024%2522%2520fill%253D%2522%2523ffffff%2522%253E%253Cpath%2520d%253D%2522M0%25200h11.377v11.372H0Zm12.623%25200H24v11.372H12.623ZM0%252012.628h11.377V24H0Zm12.623%25200H24V24H12.623Z%2522%252F%253E%253C%252Fsvg%253E)](https://github.com/marslo/cr-manager/releases/latest)
-![License](https://github.com/marslo/cr-manager/raw/main/assets/license-marvell.svg)
 
 ---
 
-- [Features](#features)
+- [Features and Format](#features-and-format)
 - [How to Contribute](#how-to-contribute)
 - [Action Modes](#action-modes)
   - [Add New Copyright Headers](#add-new-copyright-headers)
@@ -28,15 +32,15 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   - [Delete Existing Copyright Headers](#delete-existing-copyright-headers)
   - [Debug Mode](#debug-mode)
   - [Supported File Types and Formats](#supported-file-types-and-formats)
-  - [pre-commit hook](#pre-commit-hook)
 - [Install](#install)
-  - [Binary](#binary)
+  - [binary](#binary)
   - [bash completion](#bash-completion)
+  - [pre-commit hook](#pre-commit-hook)
 - [Help Message](#help-message)
 
 ---
 
-# Features
+# Features and Format
 
 - **Add**: Insert copyright headers for multiple file types.
 - **Update**: Force update or insert headers if missing.
@@ -44,6 +48,9 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 - **Delete**: Remove detected copyright headers from files.
 - Supports recursive directory traversal and filetype auto-detection or override.
 - Supports combined author-info and copyright headers.
+
+> - check format details in [Supported File Types and Formats](#supported-file-types-and-formats)
+> - modify or add new format check: [Format Configuration](./CONTRIBUTING.md#format-configuration) | [Modifying an Existing Format](./CONTRIBUTING.md#modifying-an-existing-format) | [Adding a New Format](./CONTRIBUTING.md#adding-a-new-format)
 
 <table><thead>
   <tr>
@@ -208,49 +215,8 @@ $ cr-manager --delete --debug /path/to/file
 
 ---
 
-## pre-commit hook
-
-![cr-manager pre-commit hook](https://github.com/marslo/cr-manager/raw/main/assets/git-pre-commit-hook.png)
-
-```yaml
-# if `COPYRIGHT` file can be found in the root directory of this repository
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--update"]
-```
-
-```yaml
-# specify the path to the COPYRIGHT file
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--update", "--copyright", "/path/to/COPYRIGHT"]
-        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
-```
-
-```yaml
-# only check the copyright headers without modifying files after commit
----
-repos:
-  - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.0
-    hooks:
-      - id: cr-manager
-        args: ["--check"]
-        stages: [post-commit]
-```
-
----
-
 # Install
-## Binary
+## binary
 
 > - pipx installation ( [how to install pipx](https://pipx.pypa.io/stable/how-to/install-pipx/) )
 >   ```bash
@@ -305,10 +271,65 @@ $ cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
 
 ```bash
 # uninstall
-test -f ~/.bash_completion.d/cr-manager && rm -rf ~/.bash_completion.d/cr-manager
+test -f ~/.bash_completion.d/cr-manager   && rm -rf ~/.bash_completion.d/cr-manager
 test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/cr-manager
 [[ 'Darwin' = "$(uname -s)" ]] && test -f "$(brew --prefix)/etc/bash_completion.d/cr-manager" && rm -rf "$(brew --prefix)/etc/bash_completion.d/cr-manager"
 ```
+
+## pre-commit hook
+
+![cr-manager pre-commit hook](https://github.com/marslo/cr-manager/raw/main/assets/git-pre-commit-hook.png)
+
+```yaml
+# if `COPYRIGHT` file can be found in the root directory of this repository
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v4.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--update"]
+```
+
+```yaml
+# install with git repo
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v4.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--update", "--copyright", "path/to/COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+```
+
+```yaml
+# install with local repo + pypi package
+---
+repos:
+  - repo: local
+    hooks:
+      - id: cr-manager
+        name: cr-manager
+        language: python
+        additional_dependencies: ["cr-manager==4.0.0"]
+        entry: cr-manager
+        args: ["--update", "--copyright", "COPYRIGHT"]
+        files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+```
+
+```yaml
+# only check the copyright headers without modifying files after commit
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v4.0.0
+    hooks:
+      - id: cr-manager
+        args: ["--check"]
+        stages: [post-commit]
+```
+
 
 # Help Message
 
