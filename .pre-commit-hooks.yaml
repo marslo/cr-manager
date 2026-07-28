@@ -8,3 +8,4 @@
     language_version: python3
     files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx)$)'
     args: ["--update"]
+    require_serial: true

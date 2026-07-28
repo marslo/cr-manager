@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck source=/dev/null
 #=============================================================================
-#     FileName : run.sh
+#     FileName : bootstrap.sh
 #       Author : marslo
 #      Created : 2026-04-16 19:20:20
-#   LastChange : 2026-05-06 19:12:35
+#   LastChange : 2026-07-28 16:18:54
 #        USAGE : - init the environment  : $ source run.sh [--init] [--upgrade]
 #                - clean the environment : $ source run.sh --clean
-#
 #                - setup poetry environment only: $ bash run.sh [--init]
 #                - source poetry environment without installing dependencies: $ source run.sh --source [--upgrade]
 #=============================================================================
