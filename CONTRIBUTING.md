@@ -105,34 +105,34 @@ Please check all that apply:
 2. Clone your fork:
 
    ```bash
-   $ git clone git@github.com:<your-username>/cr-manager.git
-   $ cd cr-manager
+   clone git@github.com:<your-username>/cr-manager.git
+   cd cr-manager
    ```
 
 3. Set the original repo as upstream:
 
    ```bash
-   $ git remote add upstream https://github.com/marslo/cr-manager.git
-   $ git fetch upstream
+   git remote add upstream https://github.com/marslo/cr-manager.git
+   git fetch upstream
    ```
 
 ## 2. Set Up Feature Branch
 
 ```bash
-$ git checkout -b feature/<short-description>
+git checkout -b feature/<short-description>
 ```
 
 ## 3. Setup Your Environment
 
 > [!TIP]
 > We use [Poetry](https://python-poetry.org/) for dependency management.
-> You can use [`run.sh`](./run.sh) to init and run the project in a Poetry environment via `$ source run.sh`. Check more with `$ bash run.sh --help`
+> You can use [`bootstrap.sh`](./bootstrap.sh) to init and run the project in a Poetry environment via `$ source bootstrap.sh`. Check more with `$ bash bootstrap.sh --help`
 
 | COMMAND                                | DESCRIPTION                                                                                                                           |
 |----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `$ poetry run python -m cli.crm <cmd>` | `$ poetry install`                                                                                                           |
-| `$ python -m cli.crm <cmd>`            | `$ poetry install && source "$(poetry env info --path)/bin/activate"`                                                        |
-| `$ cr-manager <cmd>`                   | **choose any :**<ul><li>`$ poetry install && source "$(poetry env info --path)/bin/activate"`</li><li>`$ pip install --user -e .`</li><li>`$ pipx install .`</li></ul> |
+| `poetry run python -m cli.crm <cmd>` | `poetry install`                                                                                                           |
+| `python -m cli.crm <cmd>`            | `poetry install && source "$(poetry env info --path)/bin/activate"`                                                        |
+| `cr-manager <cmd>`                   | **choose any :**<ul><li>`poetry install && source "$(poetry env info --path)/bin/activate"`</li><li>`pip install --user -e .`</li><li>`pipx install .`</li></ul> |
 
 
 1. install Poetry if necessary ( [how to install poetry](https://python-poetry.org/docs/#installation) ):
@@ -149,13 +149,13 @@ $ git checkout -b feature/<short-description>
    | macOS       | `brew install poetry`                                                                         |
 
    ```bash
-   $ curl -sSL https://install.python-poetry.org | python3 -
+   curl -sSL https://install.python-poetry.org | python3 -
 
    # or
-   $ pipx install poetry
+   pipx install poetry
 
    # or
-   $ python -m pip install --user poetry
+   python -m pip install --user poetry
    ```
    </details>
 
@@ -167,20 +167,20 @@ $ git checkout -b feature/<short-description>
    > 2. install the `cr-manager` package and its dependencies
 
    ```bash
-   $ poetry install
+   poetry install
    ```
 
    <details>
    <summary><b>how to clean up the poetry environment</b></summary>
 
    ```bash
-   $ poetry env remove python
+   poetry env remove python
    # - or -
-   $ poetry env remove --all
+   poetry env remove --all
 
    # clear cache
-   $ poetry cache clear pypi --all
-   $ poetry cache clear virtualenvs --all
+   poetry cache clear pypi --all
+   poetry cache clear virtualenvs --all
    ```
    </details>
 
@@ -188,13 +188,13 @@ $ git checkout -b feature/<short-description>
 3. activate the virtual environment:
 
    ```bash
-   $ source "$(poetry env info --path)/bin/activate"
+   source "$(poetry env info --path)/bin/activate"
    ```
 
    - run in the poetry environment
 
      ```bash
-     $ poetry run python -m cli.crm --help
+     poetry run python -m cli.crm --help
      ```
 
    - run in the virtual environment
@@ -204,24 +204,24 @@ $ git checkout -b feature/<short-description>
 
      ```bash
      # to show/check the current venv:
-     $ echo "${VIRTUAL_ENV}"
+     echo "${VIRTUAL_ENV}"
      ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13
 
      # to show the package in current venv
-     $ which -a cr-manager
+     which -a cr-manager
      ~/Library/Caches/pypoetry/virtualenvs/cr-manager-Uc1EBq6P-py3.13/bin/cr-manager
      ```
      </details>
 
      ```bash
      # to activate the virtual environment
-     $ source "$(poetry env info --path)/bin/activate"
+     source "$(poetry env info --path)/bin/activate"
 
      # run as cli
-     $ python -m cli.crm --help
+     python -m cli.crm --help
 
      # run as package
-     $ cr-manager --help
+     cr-manager --help
      ```
 
 ## 4. Keep Your Branch Up to Date
@@ -229,11 +229,11 @@ $ git checkout -b feature/<short-description>
 Before opening a PR, sync your branch with the latest main:
 
 ```bash
-$ git fetch upstream
-$ git checkout main
-$ git merge upstream/main
-$ git checkout feature/<your-branch>
-$ git rebase main
+git fetch upstream
+git checkout main
+git merge upstream/main
+git checkout feature/<your-branch>
+git rebase main
 ```
 
 ## 5. Open a Pull Request
@@ -241,14 +241,14 @@ $ git rebase main
 1. Push your branch to your fork:
 
    ```bash
-   $ git push origin feature/<your-branch>
+   git push origin feature/<your-branch>
    ```
 
 2. Go to the original repo on GitHub, you should see a prompt to open a PR from your branch, or using GH CLI:
 
    ```bash
    # with gh cli
-   $ gh pr create --base main \
+   gh pr create --base main \
                   --head feature/<your-branch> \
                   --title "<title>" \
                   --body "<description>" \
@@ -306,7 +306,7 @@ box_char = "*"      # was "="
 Then preview the result:
 
 ```bash
-$ cr-manager --filetype python
+cr-manager --filetype python
 ```
 
 ## Adding a New Format
@@ -330,7 +330,7 @@ simple_format = true
 Verify with:
 
 ```bash
-$ cr-manager --filetype xml
+cr-manager --filetype xml
 # <!--
 #   Copyright © 2026 marslo
 #   Licensed under the MIT License, Version 2.0

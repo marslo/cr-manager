@@ -112,26 +112,26 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   <summary><b>how to install pipx ...</b></summary>
 
   ```bash
-  $ python3 -m pip install pipx
-  $ python3 -m pipx ensurepath
+  python3 -m pip install pipx
+  python3 -m pipx ensurepath
   ```
   </details>
 
   ```bash
   # install from source
-  $ pipx install --force "git+https://github.com/marslo/cr-manager"
+  pipx install --force "git+https://github.com/marslo/cr-manager"
   # upgrade
-  $ pipx upgrade cr-manager
+  pipx upgrade cr-manager
   # switch python version
-  $ pipx reinstall cr-manager --python /path/to/python3.x
+  pipx reinstall cr-manager --python /path/to/python3.x
   ```
 
 - pip
   ```bash
   # install from pypi
-  $ python3 -m pip install --user cr-manager
+  python3 -m pip install --user cr-manager
   # upgrade
-  $ python3 -m pip install --user --upgrade cr-manager
+  python3 -m pip install --user --upgrade cr-manager
   ```
 
 - linux/macos binary
@@ -139,15 +139,15 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
   <summary><b>Click to expand ...</b></summary>
 
   ```bash
-  $ VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
+  VERSION="$(curl -fsSL https://api.github.com/repos/marslo/cr-manager/releases/latest | jq -r .tag_name)"
 
   # linux
-  $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
-  $ chmod +x cr-manager
+  curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-linux
+  chmod +x cr-manager
 
   # macos
-  $ curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
-  $ chmod +x cr-manager
+  curl -fsSL -o cr-manager https://github.com/marslo/cr-manager/releases/download/${VERSION}/cr-manager-macos
+  chmod +x cr-manager
   ```
   </details>
 
@@ -171,21 +171,21 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 
 ```bash
 # macos
-$ cr-manager --install-completion
+cr-manager --install-completion
 # or install manually
-$ cr-manager --completion | tee "$(brew --prefix)/etc/bash_completion.d/cr-manager"
+cr-manager --completion | tee "$(brew --prefix)/etc/bash_completion.d/cr-manager"
 ```
 
 ```bash
 # linux user folder
-$ cr-manager --install-completion
+cr-manager --install-completion
 # or install manually
-$ cr-manager --completion | tee ~/.bash_completion.d/cr-manager
+cr-manager --completion | tee ~/.bash_completion.d/cr-manager
 
 # linux system folder (requires sudo)
-$ sudo cr-manager --install-completion
+sudo cr-manager --install-completion
 # or install manually
-$ cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
+cr-manager --completion | sudo tee /etc/bash_completion.d/cr-manager
 ```
 
 ```bash
@@ -222,7 +222,15 @@ repos:
         entry: cr-manager
         args: ["--update", "--copyright", "COPYRIGHT"]
         files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
+        require_serial: true
 ```
+
+> [!IMPORTANT]
+> `require_serial: true` is **required for the `local` repo recipe** so pre-commit passes all matched files to a single `cr-manager` invocation.
+>
+> Without it, pre-commit splits the file list across multiple concurrent processes (one per CPU core), and each process only sees its own subset — so the progress counter restarts per batch (e.g. `1/4 … 4/4` twice instead of `1/8 … 8/8`).
+>
+> The `repo:`-based recipes above inherit `require_serial: true` automatically from the hook definition in [`.pre-commit-hooks.yaml`](./.pre-commit-hooks.yaml), so you only need to set it explicitly for `local` hooks.
 
 <details>
 <summary>if <code>COPYRIGHT</code> file can be found in the root directory of this repository</summary>
@@ -263,16 +271,16 @@ repos:
 
 ```bash
 # clone the repo
-$ git clone git@github.com:marslo/cr-manager.git
+git clone git@github.com:marslo/cr-manager.git
 
 # install via pip
 # - in global --
-$ python3 -m pip install --upgrade --editable .
+python3 -m pip install --upgrade --editable .
 # - in local --
-$ python3 -m pip install --upgrade --user --editable .
+python3 -m pip install --upgrade --user --editable .
 
 # or install via pipx
-$ pipx install --editable [--force] .
+pipx install --editable [--force] .
 ```
 </details>
 
@@ -314,10 +322,10 @@ $ pipx install --editable [--force] .
 
 ```bash
 # without venv
-$ poetry run cr-manager --filetype python
+poetry run cr-manager --filetype python
 
 # with venv or install as binary
-$ cr-manager --filetype python
+cr-manager --filetype python
 ```
 
 </details>
@@ -345,10 +353,10 @@ $ cr-manager --filetype python
 
 ```
 # without venv
-$ poetry run cr-manager --filetype java
+poetry run cr-manager --filetype java
 
 # with venv or install as binary
-$ cr-manager --filetype groovy
+cr-manager --filetype groovy
 ```
 </details>
 
@@ -372,10 +380,10 @@ $ cr-manager --filetype groovy
 
 ```
 # without venv
-$ poetry run cr-manager --filetype c
+poetry run cr-manager --filetype c
 
 # with venv or install as binary
-$ cr-manager --filetype cpp
+cr-manager --filetype cpp
 ```
 </details>
 
@@ -388,7 +396,7 @@ $ cr-manager --filetype cpp
 > [!TIP]
 > - install the pre-commit hooks after adding the configuration to `.pre-commit-config.yaml` file:
 >   ```bash
->   $ pre-commit install --install-hooks
+>   pre-commit install --install-hooks
 >   ```
 
 ![git commit with pre-commit hook](./assets/git-pre-commit-hook.png)
@@ -399,22 +407,22 @@ $ cr-manager --filetype cpp
 > without hook, you can run the cr-manager manually for all files in the repository.
 
 ```bash
-$ pre-commit run cr-manager --all-files
+pre-commit run cr-manager --all-files
 
 # or particular file
-$ pre-commit run cr-manager --files path/to/file
+pre-commit run cr-manager --files path/to/file
 ```
 
 ![run cr-manager --all-files](./assets/cr-manager-pre-commit.png)
 
 ## Running Automatically
 ```bash
-$ git commit -m "your commit message"
+git commit -m "your commit message"
 ```
 
 ## Running for Unsupported Filetype
 ```bash
-$ cr-manager [--update] --filetype python /path/to/file.txt
+cr-manager [--update] --filetype python /path/to/file.txt
 ```
 
 ![un-supported filetype](./assets/handle-unsupported-filetype.png)
@@ -426,20 +434,20 @@ $ cr-manager [--update] --filetype python /path/to/file.txt
 ## Add New Copyright Headers
 ```bash
 # single file
-$ cr-manager /path/to/file
+cr-manager /path/to/file
 # or
-$ cr-manager --add /path/to/file
+cr-manager --add /path/to/file
 
 # files recursively in directories
-$ cr-manager --recursive /path/to/directory
+cr-manager --recursive /path/to/directory
 # or
-$ cr-manager --add --recursive /path/to/directory
+cr-manager --add --recursive /path/to/directory
 
 # add to non-supported suffixes with supplied filetype
 # -- e.g. add to .txt files as python files --
-$ cr-manager --filetype python /path/to/file.txt
+cr-manager --filetype python /path/to/file.txt
 # or
-$ cr-manager --add --filetype python /path/to/file.txt
+cr-manager --add --filetype python /path/to/file.txt
 ```
 
 ## Update Existing Copyright Headers
@@ -449,10 +457,10 @@ $ cr-manager --add --filetype python /path/to/file.txt
 
 ```bash
 # single file
-$ cr-manager --update /path/to/file
+cr-manager --update /path/to/file
 
 # files recursively in directories
-$ cr-manager --update --recursive /path/to/directory
+cr-manager --update --recursive /path/to/directory
 ```
 
 ## Delete Existing Copyright Headers
@@ -462,25 +470,25 @@ $ cr-manager --update --recursive /path/to/directory
 
 ```bash
 # single file
-$ cr-manager --delete /path/to/file
+cr-manager --delete /path/to/file
 
 # files recursively in directories
-$ cr-manger --delete --recursive /path/to/directory
+cr-manger --delete --recursive /path/to/directory
 ```
 
 ## Debug Mode
 
 ```bash
 # *add* without modifying files
-$ cr-manager --debug /path/to/file
+cr-manager --debug /path/to/file
 # or
-$ cr-manager --add --debug /path/to/file
+cr-manager --add --debug /path/to/file
 
 # *update* without modifying files
-$ cr-manager --update --debug /path/to/file
+cr-manager --update --debug /path/to/file
 
 # *delete* without modifying files
-$ cr-manager --delete --debug /path/to/file
+cr-manager --delete --debug /path/to/file
 ```
 
 ---
@@ -488,7 +496,7 @@ $ cr-manager --delete --debug /path/to/file
 # Help Message
 
 ```bash
-$ cr-manager --help
+cr-manager --help
 USAGE:
   cr-manager [--add | --check | --delete | --update] [--copyright FILE] [--filetype TYPE] [--recursive]
              [--debug] [--verbose] [--completion] [--install-completion] [--help] [--version]
