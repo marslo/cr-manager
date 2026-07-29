@@ -1,3 +1,22 @@
+## [4.0.1](https://github.com/marslo/cr-manager/compare/v4.0.0...v4.0.1) (2026-07-29)
+
+### Bug Fixes
+
+* fix(pre-commit): run cr-manager serially in pre-commit and documents update (#39)
+
+### Documentation
+
+* docs: update readme
+* docs(readme): add local repo + pypi solution for pre-commit hook install
+
+### CI/CD
+
+* ci(workflow): restrict release workflows to the source repository and add a fork sync workflow (#40)
+
+### build
+
+* build(release): migrate semantic-release config from JSON to JS with custom Handlebars templates (#41)
+
 ## [4.0.0](https://github.com/marslo/cr-manager/compare/v3.3.4...v4.0.0) (2026-05-26)
 
 ### ⚠ BREAKING CHANGES
