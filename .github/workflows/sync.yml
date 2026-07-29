@@ -10,6 +10,11 @@ on:
     types: [completed]
   workflow_dispatch:
     inputs:
+      sync_releases:
+        description: 'sync releases and artifacts (uncheck to sync code only)'
+        required: false
+        type: boolean
+        default: true
       release:
         description: 'release tag to (re)sync, e.g. v1.2.3 — empty uses the latest source release'
         required: false
@@ -52,13 +57,53 @@ jobs:
         env:
           FORK_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
         run: |
+          set -euo pipefail
+
+          # readme files whose marslo/cr-manager references are rebranded to Marvell-Lab/cr-manager on the forks
+          readmes=( README.md README.PYPI.md )
+          src_sha="$(git rev-parse HEAD)"
+          author_date="$(git show -s --format=%aI "${src_sha}")"
+          commit_date="$(git show -s --format=%cI "${src_sha}")"
+
+          # fork main = source HEAD with the readme(s) rebranded; deterministic identity + date
+          # so an unchanged source reproduces the same commit (force-push stays a no-op)
+          git checkout -q -B fork_main "${src_sha}"
+          changed=false
+          for f in "${readmes[@]}"; do
+            [ -f "${f}" ] || continue
+            grep -q 'marslo/cr-manager' "${f}" || continue
+            awk '
+              /^[ \t]*```/ { in_code_block = !in_code_block; print; next }
+              in_code_block { gsub(/marslo\/cr-manager/, "Marvell-Lab/cr-manager") }
+              { print }
+            ' "${f}" > "${f}.tmp" && mv "${f}.tmp" "${f}"
+            changed=true
+          done
+
+          if [ "${changed}" = true ]; then
+            git add -u
+            GIT_AUTHOR_NAME='github-actions[bot]' \
+            GIT_AUTHOR_EMAIL='41898282+github-actions[bot]@users.noreply.github.com' \
+            GIT_COMMITTER_NAME='github-actions[bot]' \
+            GIT_COMMITTER_EMAIL='41898282+github-actions[bot]@users.noreply.github.com' \
+            GIT_AUTHOR_DATE="${author_date}" \
+            GIT_COMMITTER_DATE="${commit_date}" \
+              git commit -q -m "docs: rebrand for fork"
+          fi
+
           for target in "Marvell-Lab/cr-manager" "marslo_mrvl/cr-manager"; do
             remote_name="fork_${target/\//_}"
             git remote add "${remote_name}" "https://x-access-token:${FORK_TOKEN}@github.com/${target}.git"
-            git push "${remote_name}" HEAD:refs/heads/main --tags
+
+            # branch needs --force (rebranded tip diverges from source lineage); tags fast-forward
+            git push --force "${remote_name}" fork_main:refs/heads/main
+            git push "${remote_name}" --tags
           done
 
+          git checkout -q -f main
+
       - name: sync release and artifacts
+        if: github.event_name == 'workflow_run' || inputs.sync_releases
         env:
           GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
           # manual overrides (empty on workflow_run); passed via env to avoid shell injection
