@@ -1,0 +1,216 @@
+---
+name: Sync to Forks
+run-name: "Sync to Forks · ${{ github.event_name == 'workflow_run' && format('after {0} #{1}', github.event.workflow_run.name, github.event.workflow_run.run_number) || format('manual · {0}', inputs.release != '' && inputs.release || 'latest') }} · @${{ github.actor }}"
+
+on:
+  # run only after the deploy workflow (build + upload release assets) completes,
+  # so the release already carries the compiled packages before mirroring to forks
+  workflow_run:
+    workflows: ["deploy"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'release tag to (re)sync, e.g. v1.2.3 — empty uses the latest source release'
+        required: false
+        type: string
+      force:
+        description: 're-create the release on forks even if it already exists (fixes partial / asset-less syncs)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    # source repo only; when triggered by workflow_run, require the deploy run to have succeeded
+    if: >-
+      github.repository == 'marslo/cr-manager' &&
+      ( github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' )
+    name: Sync to Forks
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout source
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: verify
+        env:
+          FORK_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: |
+          if [ -z "${FORK_TOKEN}" ]; then
+            echo "::error::FORK_SYNC_TOKEN secret is not set; cannot push to forks or sync releases."
+            exit 1
+          fi
+
+      - name: push main + tags
+        env:
+          FORK_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: |
+          for target in "Marvell-Lab/cr-manager" "marslo_mrvl/cr-manager"; do
+            remote_name="fork_${target/\//_}"
+            git remote add "${remote_name}" "https://x-access-token:${FORK_TOKEN}@github.com/${target}.git"
+            git push "${remote_name}" HEAD:refs/heads/main --tags
+          done
+
+      - name: sync release and artifacts
+        env:
+          GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+          # manual overrides (empty on workflow_run); passed via env to avoid shell injection
+          INPUT_RELEASE: ${{ inputs.release }}
+          INPUT_FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          src="${{ github.repository }}"
+          target1="Marvell-Lab/cr-manager"
+          target2="marslo_mrvl/cr-manager"
+
+          input_tag="${INPUT_RELEASE:-}"
+          force="${INPUT_FORCE:-false}"
+
+          # all non-draft release tags on source
+          srcRaw="$(gh release list --repo "${src}" --limit 1000 --json tagName,isDraft --jq '.[] | select(.isDraft | not) | .tagName')"
+          srcTags=()
+          test -n "${srcRaw}" && mapfile -t srcTags <<< "${srcRaw}"
+
+          if [ ${#srcTags[@]} -eq 0 ]; then
+            echo "::notice::no non-draft releases found on ${src}; nothing to sync."
+            exit 0
+          fi
+
+          # release tags already present on each fork
+          t1Raw="$(gh release list --repo "${target1}" --limit 1000 --json tagName --jq '.[].tagName')"
+          t1Tags=()
+          test -n "${t1Raw}" && mapfile -t t1Tags <<< "${t1Raw}"
+
+          t2Raw="$(gh release list --repo "${target2}" --limit 1000 --json tagName --jq '.[].tagName')"
+          t2Tags=()
+          test -n "${t2Raw}" && mapfile -t t2Tags <<< "${t2Raw}"
+
+          declare -A t1_has t2_has
+          for t in "${t1Tags[@]}"; do t1_has["$t"]=1; done
+          for t in "${t2Tags[@]}"; do t2_has["$t"]=1; done
+
+          # decide which releases to sync:
+          #   manual + tag  -> just that tag (must exist on source)
+          #   manual + none -> the latest source release
+          #   workflow_run  -> every release missing on either fork (backfill)
+          sync_tags=()
+          if [ -n "${input_tag}" ]; then
+            if ! printf '%s\n' "${srcTags[@]}" | grep -qxF "${input_tag}"; then
+              echo "::error::release '${input_tag}' not found among ${src} non-draft releases."
+              exit 1
+            fi
+            sync_tags=("${input_tag}")
+            echo "::notice::manual sync of a single release: ${input_tag} (force=${force})"
+          elif [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            latest="$(gh release view --repo "${src}" --json tagName --jq '.tagName' 2>/dev/null || true)"
+            [ -n "${latest}" ] || latest="$(printf '%s\n' "${srcTags[@]}" | sort -V | tail -n1)"
+            sync_tags=("${latest}")
+            echo "::notice::manual sync defaulting to latest release: ${latest} (force=${force})"
+          else
+            for t in "${srcTags[@]}"; do
+              if [[ -z "${t1_has[$t]:-}" || -z "${t2_has[$t]:-}" ]]; then
+                sync_tags+=("$t")
+              fi
+            done
+            if [ ${#sync_tags[@]} -eq 0 ]; then
+              echo "::notice::All target forks are already up to date with source releases."
+              { echo "## sync"; echo "All target forks are already up to date."; } >> "${GITHUB_STEP_SUMMARY}"
+              exit 0
+            fi
+          fi
+
+          # process oldest to newest for chronological release creation
+          mapfile -t sync_tags < <(printf '%s\n' "${sync_tags[@]}" | sort -V)
+
+          # create the release on <repo> when the tag is missing there; writes synced back via nameref so `set -e` still catches gh failures
+          create_release() {
+            local repo="$1" has="$2"
+            local -n _synced="$3"
+            _synced=false
+
+            # skip when the fork already has the release, unless force re-creates it
+            # (delete keeps the git tag; only the release + assets are replaced)
+            if [[ -n "${has}" ]]; then
+              [[ "${force}" == "true" ]] || return 0
+              echo ":: force: deleting existing ${tag} on ${repo} before recreate"
+              gh release delete "${tag}" --repo "${repo}" --yes || true
+            fi
+
+            local -a args=( gh release create "${tag}" --repo "${repo}" --title "${title}" --notes-file notes.md )
+            [ "${pre}" = true ]        && args+=( --prerelease )
+            [ ${#artifacts[@]} -gt 0 ] && args+=( "${artifacts[@]}" )
+
+            local out; out="$("${args[@]}")"
+            echo ":: created ${tag} on ${repo} -> ${out}"
+            _synced=true
+          }
+
+          for tag in "${sync_tags[@]}"; do
+            echo "Syncing release: ${tag}"
+
+            # get release data from source
+            data="$(gh release view "${tag}" --repo "${src}" --json name,body,isPrerelease,targetCommitish)"
+            title="$(jq -r '.name // ""' <<< "${data}")"
+            test -n "${title}" || title="${tag}"
+            pre="$(jq -r '.isPrerelease' <<< "${data}")"
+
+            # resolve the real commit the tag points to — same on every mirror; targetCommitish from the api is unreliable (often just the branch name)
+            tag_sha="$(git rev-parse "${tag}^{commit}")"
+            src_sha="${tag_sha}"
+
+            # rewrite (#ID) -> [#ID](https://github.com/marslo/cr-manager/pull/ID)
+            jq -r '.body // ""' <<< "${data}" | sed -E "s|\(#([0-9]+)\)|[#\1](https://github.com/${src}/pull/\1)|g" > notes.md
+
+            # download artifacts
+            rm -rf release_artifacts
+            mkdir -p release_artifacts
+            gh release download "${tag}" --repo "${src}" --dir release_artifacts || true
+            shopt -s nullglob
+            artifacts=( release_artifacts/* )
+
+            # create releases on the forks when missing; sha is identical everywhere
+            create_release "${target1}" "${t1_has[$tag]:-}" t1_synced
+            create_release "${target2}" "${t2_has[$tag]:-}" t2_synced
+
+            # add summary for this release
+            srcUrl="https://github.com/${src}"
+            t1Url="https://github.com/${target1}"
+            t2Url="https://github.com/${target2}"
+
+            # populate columns when the release exists on the target (pre-existing or created now)
+            t1_col_branch="-"
+            t1_col_tags="-"
+            t1_col_rev="-"
+            if [[ -n "${t1_has[$tag]:-}" || "$t1_synced" = true ]]; then
+              t1_col_branch="[main](${t1Url}/tree/main)"
+              t1_col_tags="[${tag}](${t1Url}/releases/tag/${tag})"
+              t1_col_rev="[\`${tag_sha:0:7}\`](${t1Url}/commit/${tag_sha})"
+            fi
+
+            t2_col_branch="-"
+            t2_col_tags="-"
+            t2_col_rev="-"
+            if [[ -n "${t2_has[$tag]:-}" || "$t2_synced" = true ]]; then
+              t2_col_branch="[main](${t2Url}/tree/main)"
+              t2_col_tags="[${tag}](${t2Url}/releases/tag/${tag})"
+              t2_col_rev="[\`${tag_sha:0:7}\`](${t2Url}/commit/${tag_sha})"
+            fi
+
+            {
+              echo "## sync — Release ${tag}"
+              echo ""
+              echo "| field | [${src}](${srcUrl}) | [${target1}](${t1Url}) | [${target2}](${t2Url}) |"
+              echo "|---|---|---|---|"
+              echo "| branch | [main](${srcUrl}/tree/main) | ${t1_col_branch} | ${t2_col_branch} |"
+              echo "| tags | [${tag}](${srcUrl}/releases/tag/${tag}) | ${t1_col_tags} | ${t2_col_tags} |"
+              echo "| revision | [\`${src_sha:0:7}\`](${srcUrl}/commit/${src_sha}) | ${t1_col_rev} | ${t2_col_rev} |"
+              echo ""
+            } >> "${GITHUB_STEP_SUMMARY}"
+          done

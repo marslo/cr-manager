@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   build-executables:
+    if: github.repository == 'marslo/cr-manager'
     name: Build Standalone Executables
     strategy:
       matrix:

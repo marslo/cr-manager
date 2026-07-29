@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   release:
+    if: github.repository == 'marslo/cr-manager'
     runs-on: ubuntu-latest
 
     steps:
