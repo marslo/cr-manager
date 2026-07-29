@@ -230,22 +230,21 @@ jobs:
             t2Url="https://github.com/${target2}"
 
             # populate columns when the release exists on the target (pre-existing or created now)
+            main_sha="$(git rev-parse main)"
+            fork_sha="$(git rev-parse fork_main 2>/dev/null || echo "${main_sha}")"
+
             t1_col_branch="-"
             t1_col_tags="-"
-            t1_col_rev="-"
             if [[ -n "${t1_has[$tag]:-}" || "$t1_synced" = true ]]; then
-              t1_col_branch="[main](${t1Url}/tree/main)"
-              t1_col_tags="[${tag}](${t1Url}/releases/tag/${tag})"
-              t1_col_rev="[\`${tag_sha:0:7}\`](${t1Url}/commit/${tag_sha})"
+              t1_col_branch="[main](${t1Url}/tree/main) ([\`${fork_sha:0:7}\`](${t1Url}/commit/${fork_sha}))"
+              t1_col_tags="[${tag}](${t1Url}/releases/tag/${tag}) ([\`${tag_sha:0:7}\`](${t1Url}/commit/${tag_sha}))"
             fi
 
             t2_col_branch="-"
             t2_col_tags="-"
-            t2_col_rev="-"
             if [[ -n "${t2_has[$tag]:-}" || "$t2_synced" = true ]]; then
-              t2_col_branch="[main](${t2Url}/tree/main)"
-              t2_col_tags="[${tag}](${t2Url}/releases/tag/${tag})"
-              t2_col_rev="[\`${tag_sha:0:7}\`](${t2Url}/commit/${tag_sha})"
+              t2_col_branch="[main](${t2Url}/tree/main) ([\`${fork_sha:0:7}\`](${t2Url}/commit/${fork_sha}))"
+              t2_col_tags="[${tag}](${t2Url}/releases/tag/${tag}) ([\`${tag_sha:0:7}\`](${t2Url}/commit/${tag_sha}))"
             fi
 
             {
@@ -253,9 +252,8 @@ jobs:
               echo ""
               echo "| field | [${src}](${srcUrl}) | [${target1}](${t1Url}) | [${target2}](${t2Url}) |"
               echo "|---|---|---|---|"
-              echo "| branch | [main](${srcUrl}/tree/main) | ${t1_col_branch} | ${t2_col_branch} |"
-              echo "| tags | [${tag}](${srcUrl}/releases/tag/${tag}) | ${t1_col_tags} | ${t2_col_tags} |"
-              echo "| revision | [\`${src_sha:0:7}\`](${srcUrl}/commit/${src_sha}) | ${t1_col_rev} | ${t2_col_rev} |"
+              echo "| branch (tip) | [main](${srcUrl}/tree/main) ([\`${main_sha:0:7}\`](${srcUrl}/commit/${main_sha})) | ${t1_col_branch} | ${t2_col_branch} |"
+              echo "| tags (revision) | [${tag}](${srcUrl}/releases/tag/${tag}) ([\`${src_sha:0:7}\`](${srcUrl}/commit/${src_sha})) | ${t1_col_tags} | ${t2_col_tags} |"
               echo ""
             } >> "${GITHUB_STEP_SUMMARY}"
           done
