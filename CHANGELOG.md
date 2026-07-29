@@ -1,3 +1,9 @@
+## [4.0.2](https://github.com/marslo/cr-manager/compare/v4.0.1...v4.0.2) (2026-07-29)
+
+### Others
+
+* chore(sync,pyproject): rebrand on forks and set PyPI license to Marvell Semiconductor
+
 ## [4.0.1](https://github.com/marslo/cr-manager/compare/v4.0.0...v4.0.1) (2026-07-29)
 
 ### Bug Fixes
