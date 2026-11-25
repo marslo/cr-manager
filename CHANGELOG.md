@@ -1,3 +1,14 @@
+## [4.1.1](https://github.com/marslo/cr-manager/compare/v4.1.0...v4.1.1) (2026-11-25)
+
+### CI/CD
+
+* **release**, **workflow**: support semantic-release 26 ([5cd5def](https://github.com/marslo/cr-manager/commit/5cd5def9b7d60fe0de02286176e65d99b05c75c0))
+  - add a function `template` for `conventional-changelog-writer` 9 that renders the same markdown as the Handlebars templates
+  - keep the Handlebars strings for writer 8 ( semantic-release <= 25 )
+  - fix `headerPartial is not a function` on semantic-release 26
+  - run the release workflow on node 26 so npm no longer falls back to semantic-release 25
+  - pin plugin majors and drop the unused standalone `@semantic-release/release-notes-generator`
+
 ## [4.1.0](https://github.com/marslo/cr-manager/compare/v4.0.2...v4.1.0) (2026-11-25)
 
 ### Features
