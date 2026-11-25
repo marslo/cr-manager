@@ -6,7 +6,7 @@
     entry: cr-manager
     language: python
     language_version: python3
-    files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx|css|js|mjs|cjs|html|htm|xhtml)$)'
+    files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx|rs|css|js|mjs|cjs|html|htm|xhtml)$)'
     exclude: '(?i)\.min\.(css|js)$'
     args: ["--update"]
     require_serial: true

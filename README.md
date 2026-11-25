@@ -89,6 +89,15 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
       <td valign="middle" width="600"><img src="assets/ft-cpp.png" alt="c/cpp screenshot"></td>
   </tr>
   <tr>
+      <td valign="middle"><pre><code>// ==========================
+//  Copyright © 2026 Marslo
+//  Licensed under MIT
+// ==========================</code></pre></td>
+      <td valign="middle"><code>rust</code><br><code>rs</code></td>
+      <td valign="middle"><code>.rs</code></td>
+      <td valign="middle" width="600"></td>
+  </tr>
+  <tr>
       <td valign="middle"><pre><code>/*!
  *****************************
  * Copyright © 2026 Marslo   *
@@ -413,6 +422,26 @@ cr-manager --filetype cpp
 
 ---
 
+|   FILETYPE      |  SUFFIXES  |
+|:---------------:|:----------:|
+| `rust`, `rs`    | `.rs`      |
+
+```rust
+// =============================================================================
+//  Copyright © 2026 marslo
+//  Licensed under the MIT License, Version 2.0
+// =============================================================================
+```
+
+- plain `//` comments — `///`, `//!`, `/**`, `/*!` are rustdoc comments in Rust
+- a leading cargo-script shebang stays on top; an inner attribute `#![...]` does not
+
+```bash
+cr-manager --filetype rust
+```
+
+---
+
 |      FILETYPE                   |              SUFFIXES              |
 |:-------------------------------:|:----------------------------------:|
 | `css`, `javascript`, `js`       | `.css`, `.js`, `.mjs`, `.cjs`      |
@@ -581,7 +610,7 @@ OPTIONS:
   -t, --filetype TYPE       Force override a filetype instead of auto-detection.
                             If provided, displays a formatted preview for that type. Supported: bash, c,
                             c++, cpp, css, cxx, dockerfile, gradle, groovy, h, hpp, html, hxx, java,
-                            javascript, jenkinsfile, js, python, sh, shell, xhtml
+                            javascript, jenkinsfile, js, python, rs, rust, sh, shell, xhtml
   -r, --recursive           If FILES includes directories, process their contents recursively.
   --debug                   Debug mode: Preview the result of an action without modifying files.
   --verbose                 Show a detailed processing summary.

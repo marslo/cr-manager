@@ -86,6 +86,14 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
       <td valign="middle"><code>.c</code><br><code>.cpp</code><br><code>.cxx</code><br><code>.hpp</code><br><code>.hxx</code></td>
   </tr>
   <tr>
+      <td valign="middle"><pre><code>// ==========================
+//  Copyright © 2026 Marslo
+//  Licensed under MIT
+// ==========================</code></pre></td>
+      <td valign="middle"><code>rust</code><br><code>rs</code></td>
+      <td valign="middle"><code>.rs</code></td>
+  </tr>
+  <tr>
       <td valign="middle"><pre><code>/*!
  *****************************
  * Copyright © 2026 Marslo   *
@@ -234,6 +242,19 @@ cr-manager --delete --debug /path/to/file
 ```
 
 ![c/cpp](https://github.com/marslo/cr-manager/raw/main/assets/ft-cpp.png)
+
+---
+
+|   FILETYPE      |  SUFFIXES  |
+|:---------------:|:----------:|
+| `rust`, `rs`    | `.rs`      |
+
+```rust
+// =============================================================================
+//  Copyright © 2026 marslo
+//  Licensed under the MIT License, Version 2.0
+// =============================================================================
+```
 
 ---
 
@@ -415,7 +436,7 @@ OPTIONS:
   -t, --filetype TYPE       Force override a filetype instead of auto-detection.
                             If provided, displays a formatted preview for that type. Supported: bash, c,
                             c++, cpp, css, cxx, dockerfile, gradle, groovy, h, hpp, html, hxx, java,
-                            javascript, jenkinsfile, js, python, sh, shell, xhtml
+                            javascript, jenkinsfile, js, python, rs, rust, sh, shell, xhtml
   -r, --recursive           If FILES includes directories, process their contents recursively.
   --debug                   Debug mode: Preview the result of an action without modifying files.
   --verbose                 Show a detailed processing summary.

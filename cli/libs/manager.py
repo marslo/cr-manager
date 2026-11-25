@@ -354,7 +354,10 @@ class CopyrightManager:
         border_re = re.compile( rf"^\s*{bl}\s*{box}{{3,}}\s*{br}\s*$" )
 
         borders = [ i for i in range(block_start, block_end + 1) if border_re.match(lines[i]) ]
-        if len(borders) >= 2: return borders[0], borders[-1]
+        # first pair of adjacent borders that encloses a copyright line; other banners in the same block are left alone
+        for top, bottom in zip( borders, borders[1:] ):
+            if any( COPYRIGHT_KEYWORD_PAT.search(lines[i]) for i in range(top + 1, bottom) ):
+                return top, bottom
         return -1, -1
 
     def _find_first_comment_block( self, lines: List[str], search_start_idx: int, fmt: str ) -> Tuple[int, int]:

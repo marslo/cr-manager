@@ -32,7 +32,7 @@ _cr_manager() {
   local cur prev words
   _init_completion || return
 
-  local -r filetypes='bash c c++ cpp css cxx dockerfile gradle groovy h hpp html hxx java javascript jenkinsfile js python sh shell xhtml'
+  local -r filetypes='bash c c++ cpp css cxx dockerfile gradle groovy h hpp html hxx java javascript jenkinsfile js python rs rust sh shell xhtml'
 
   local -r action_flags='--add --check --delete --update'
   local -r action_shorts='-a -c -d -u'
