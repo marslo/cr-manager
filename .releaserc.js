@@ -133,8 +133,11 @@ module.exports = {
           const c = { ...commit };
 
           // type -> section label (drives the "### <section>" grouping)
+          // commits without a conventional `type:` prefix (e.g. "Initial commit") would render ungrouped under the previous section; file them under "Others" with the chore commits
           if (TYPE_TO_SECTION[c.type]) {
             c.type = TYPE_TO_SECTION[c.type];
+          } else if (!c.type) {
+            c.type = TYPE_TO_SECTION.chore;
           }
 
           // preset's default transform (overridden here) normally sets shortHash; restore it so the commit link text isn't empty ("[](…/commit/<hash>)")
@@ -151,14 +154,16 @@ module.exports = {
           }
 
           // the parser may split trailing body lines into `footer` (e.g. a bullet containing an issue-like "#N"); fold body + footer back together, drop Signed-off-by and BREAKING CHANGE notes (rendered from `notes`), collapse repeated blank lines and trim trailing ones
+          // joined by a blank line: conventional-commits-parser >= 7 moves trailers ( "Co-authored-by: …" ) into `footer` without the blank line before them; the collapse below drops it again when the body already ends blank
           const detail = stripNotes(
             [c.body, c.footer]
               .filter(Boolean)
-              .join('\n')
+              .join('\n\n')
               .split('\n')
               .filter(l => !isSignoff(l))
           ).filter((l, i, a) => !(l.trim() === '' && i > 0 && a[i - 1].trim() === ''));
-          while (detail.length && detail[detail.length - 1].trim() === '') { detail.pop(); }
+          // trailing blank lines and a GitHub squash-merge "---------" separator ( left over once the Signed-off-by trailers around it are dropped )
+          while (detail.length && /^\s*(-{3,})?\s*$/.test(detail[detail.length - 1])) { detail.pop(); }
           if (detail.some(l => l.trim() !== '')) {
             // bullet body (`- ...`) -> 2-space sub-list right under the subject; free-form body (no bullets) -> blank line + 4-space verbatim block
             const hasBullets = detail.some(l => /^\s*-\s+\S/.test(l));
