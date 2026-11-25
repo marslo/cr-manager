@@ -64,8 +64,8 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 # Copyright © 2026 Marslo    #
 # Licensed under MIT         #
 # ========================== #</code></pre></td>
-      <td valign="middle"><code>python</code><br><code>shell</code><br><code>bash</code><br><code>sh</code><br><code>dockerfile</code></td>
-      <td valign="middle"><code>.py</code><br><code>.sh</code><br><code>.dockerfile</code></td>
+      <td valign="middle"><code>python</code><br><code>shell</code><br><code>bash</code><br><code>sh</code><br><code>dockerfile</code><br><code>containerfile</code></td>
+      <td valign="middle"><code>.py</code><br><code>.sh</code><br><code>.dockerfile</code><br><code>.containerfile</code><br><code>Dockerfile*</code></td>
       <td valign="middle" width="600"><img src="assets/ft-py.png" alt="python screenshot"></td>
   </tr>
   <tr>
@@ -295,6 +295,26 @@ repos:
 ```
 </details>
 
+<details>
+<summary>Dockerfile / Containerfile - <b>cr-manager-dockerfile</b> hook</summary>
+
+- matches `Dockerfile` / `Containerfile` as a dot-separated name part, case-insensitive: `Dockerfile`, `Dockerfile.dev`, `app.Dockerfile`, `build.dockerfile`
+- other names: override `files`; keep `--filetype dockerfile` when overriding `args`
+
+```yaml
+---
+repos:
+  - repo: https://github.com/marslo/cr-manager
+    rev: v4.0.2
+    hooks:
+      - id: cr-manager
+        args: ["--update", "--copyright", "COPYRIGHT"]
+      - id: cr-manager-dockerfile
+        args: ["--update", "--filetype", "dockerfile", "--copyright", "COPYRIGHT"]
+        # files: ^docker/images/          # optional: Dockerfiles with arbitrary names
+```
+</details>
+
 ## Install as Local Package
 
 <details>
@@ -339,7 +359,7 @@ pipx install --editable [--force] .
 
 |                    FILETYPE                   |           SUFFIXES          |
 |:---------------------------------------------:|:---------------------------:|
-| `python`, `shell`, `bash`, `sh`, `dockerfile` | `.py`, `.sh`, `.dockerfile` |
+| `python`, `shell`, `bash`, `sh`, `dockerfile`, `containerfile` | `.py`, `.sh`, `.dockerfile`, `.containerfile`, `Dockerfile*` / `*.Dockerfile` / `Containerfile*` ( case-insensitive ) |
 
 ```bash
 # ============================================================================ #
@@ -609,8 +629,8 @@ OPTIONS:
   --copyright FILE          Specify the copyright template file path (default: COPYRIGHT).
   -t, --filetype TYPE       Force override a filetype instead of auto-detection.
                             If provided, displays a formatted preview for that type. Supported: bash, c,
-                            c++, cpp, css, cxx, dockerfile, gradle, groovy, h, hpp, html, hxx, java,
-                            javascript, jenkinsfile, js, python, rs, rust, sh, shell, xhtml
+                            c++, containerfile, cpp, css, cxx, dockerfile, gradle, groovy, h, hpp, html,
+                            hxx, java, javascript, jenkinsfile, js, python, rs, rust, sh, shell, xhtml
   -r, --recursive           If FILES includes directories, process their contents recursively.
   --debug                   Debug mode: Preview the result of an action without modifying files.
   --verbose                 Show a detailed processing summary.

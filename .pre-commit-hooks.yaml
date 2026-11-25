@@ -6,7 +6,19 @@
     entry: cr-manager
     language: python
     language_version: python3
-    files: '(?i)((^|.*/)(Dockerfile|Jenkinsfile)$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx|rs|css|js|mjs|cjs|html|htm|xhtml)$)'
+    files: '(?i)((^|.*/)Jenkinsfile$|.*/(dockerfile|jenkinsfile)/.*|.*\.(sh|bash|py|gradle|groovy|java|c|cpp|cxx|h|hpp|hxx|rs|css|js|mjs|cjs|html|htm|xhtml)$)'
     exclude: '(?i)\.min\.(css|js)$'
     args: ["--update"]
+    require_serial: true
+
+# Dockerfile / Containerfile as a dot-separated name part, case-insensitive: Dockerfile, Dockerfile.dev, app.Dockerfile, build.dockerfile
+# other names: override `files` in .pre-commit-config.yaml, e.g. `files: ^docker/images/`
+-   id: cr-manager-dockerfile
+    name: Update Copyright Headers (Dockerfile)
+    description: Adds, updates, or checks copyright headers in Dockerfile / Containerfile using the cr-manager tool.
+    entry: cr-manager
+    language: python
+    language_version: python3
+    files: '(?i)(^|/)([^/]+\.)?(dockerfile|containerfile)(\.[^/]+)?$'
+    args: ["--update", "--filetype", "dockerfile"]
     require_serial: true

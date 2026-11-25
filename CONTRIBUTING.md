@@ -273,6 +273,7 @@ All comment-style definitions live in [`cli/libs/formats.toml`](./cli/libs/forma
 | `box_right`     | Right side of the border line (`simple_format = false` only).        |
 | `box_char`      | Repeated character forming the border (e.g. `=`, `*`).               |
 | `simple_format` | `true` → no border box; `false` → bordered with `box_char` framing.  |
+| `filenames`     | Optional, in the top-level `[name]` table ( next to `suffixes` ). Regexes matched against the basename, checked before `suffixes`. e.g. `hash_comment` uses `['(?i)^(.+\.)?(dockerfile\|containerfile)(\..+)?$']`. |
 | `insert_after`  | Optional. Ordered regex list of leading lines kept above the header; each pattern is tried once against the next line. Default: `['^#!', '^[ \t\f]*#.*?coding[:=]…']` ( shebang, then encoding ). e.g. `html_comment` uses `['^\ufeff?<\?xml\s', '(?i)^\ufeff?\s*<!doctype\s']`. |
 
 ## Format Modes

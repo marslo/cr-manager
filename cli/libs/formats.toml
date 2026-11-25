@@ -11,6 +11,7 @@
 #   box_char      : repeated character forming the border run
 #   simple_format : true  → no box, just content_left-prefixed lines
 #                   false → box_left + box_char*n + box_right framing
+#   filenames     : (optional, top-level [name] table) regexes matched against the basename; checked before `suffixes`
 #   insert_after  : (optional) ordered list of regexes for leading lines the header goes below;
 #                   each pattern is tried once, in order, against the next line from the top
 #                   default: ['^#!', '^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)'] → shebang, then encoding
@@ -22,8 +23,10 @@
 # # ============================================================================ #   → <box_left><box_char*n><box_right>
 
 [hash_comment]
-filetypes = ["python", "shell", "bash", "sh", "dockerfile"]
-suffixes  = [".sh", ".py", ".dockerfile"]
+filetypes = ["python", "shell", "bash", "sh", "dockerfile", "containerfile"]
+suffixes  = [".sh", ".py", ".dockerfile", ".containerfile"]
+# Dockerfile / Containerfile as a dot-separated name part, case-insensitive: Dockerfile, Dockerfile.dev, app.Dockerfile, build.dockerfile
+filenames = ['(?i)^(.+\.)?(dockerfile|containerfile)(\..+)?$']
 
 [hash_comment.config]
 start_line    = ""

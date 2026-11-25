@@ -48,12 +48,14 @@ def _load_file_type_map() -> Dict[str, Any]:
         config = data.get( 'config', {} )
         try:
             insert_after = [ re.compile(p) for p in config.get( 'insert_after', DEFAULT_INSERT_AFTER ) ]
+            filenames    = [ re.compile(p) for p in data.get( 'filenames', [] ) ]
         except re.error as e:
             print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Invalid regex in {COLOR_MAGENTA_I}[{fmt}]{COLOR_DEBUG_I} of {COLOR_MAGENTA_I}{toml_path}{COLOR_RESET} — {e}", file=sys.stderr )
             sys.exit(5)
         type_map[fmt] = {
             'filetypes'    : set( data.get('filetypes', []) ),
             'suffixes'     : set( data.get('suffixes',  []) ),
+            'filenames'    : filenames,
             'config'       : config,
             'insert_after' : insert_after,
         }
@@ -103,7 +105,7 @@ def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional
     # pylint: disable=too-many-branches,too-many-return-statements
     """
     Detects the file format.
-    Priority order: 1. Forced filetype, 2. Vim modeline, 3. File suffix, 4. Content heuristics.
+    Priority order: 1. Forced filetype, 2. Vim modeline, 3. File name, 4. File suffix, 5. Content heuristics.
     """
     # 1. forced filetype
     if filetype:
@@ -127,14 +129,19 @@ def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional
                 if modeline_type in data.get( 'filetypes', set() ):
                     return fmt
 
-    # 3. file suffix
+    # 3. file name ( `filenames` regexes against the basename, e.g. Dockerfile.dev / app.Dockerfile )
+    for fmt, data in FILE_TYPE_MAP.items():
+        if any( pattern.search(path.name) for pattern in data.get( 'filenames', [] ) ):
+            return fmt
+
+    # 4. file suffix
     suffix = path.suffix.lower()
     if suffix:
         for fmt, data in FILE_TYPE_MAP.items():
             if suffix in data.get( 'suffixes', set() ):
                 return fmt
 
-    # 4. content/path heuristics (shebang, jenkinsfile)
+    # 5. content/path heuristics (shebang, jenkinsfile)
     if content:
         if any( part.lower() == 'jenkinsfile' for part in path.parts ):
             return 'groovy_style_comment'
@@ -145,7 +152,7 @@ def detect_file_format( path: Path, filetype: Optional[str] = None ) -> Optional
             if 'bash' in first_line or 'sh' in first_line: return 'hash_comment'
             if 'groovy' in first_line: return 'groovy_style_comment'
 
-    # 5. forced filetype given but matched nothing above — warn and fall through to None
+    # 6. forced filetype given but matched nothing above — warn and fall through to None
     if filetype:
         print( f"{COLOR_YELLOW}WARNING: {COLOR_DEBUG}Forced filetype {COLOR_YELLOW_I}'{filetype}' {COLOR_DEBUG}is not in the known configurations.{COLOR_RESET}", file=sys.stderr )
 
