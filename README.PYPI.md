@@ -256,6 +256,8 @@ cr-manager --delete --debug /path/to/file
 // =============================================================================
 ```
 
+![rust](https://github.com/marslo/cr-manager/raw/main/assets/ft-rs.png)
+
 ---
 
 |      FILETYPE                   |              SUFFIXES              |
@@ -270,6 +272,8 @@ cr-manager --delete --debug /path/to/file
  *******************************************************************************
  */
 ```
+
+![css/javascript](https://github.com/marslo/cr-manager/raw/main/assets/ft-js.png)
 
 ---
 
@@ -288,6 +292,9 @@ cr-manager --delete --debug /path/to/file
 ```
 
 - the header is inserted below a leading `<?xml ...?>` / `<!DOCTYPE ...>` line
+
+
+![html](https://github.com/marslo/cr-manager/raw/main/assets/ft-html.png)
 
 ---
 

@@ -4,6 +4,11 @@
 // WHY THE TEMPLATES ARE INLINED HERE:
 //   @semantic-release/release-notes-generator renders with the Handlebars-based conventional-changelog-writer. conventional-changelog-conventionalcommits >= 9 dropped its Handlebars writerOpts in favour of @conventional-changelog/ template, which release-notes-generator does NOT use — so with preset >= 9 the section grouping silently disappears (flat list, no "### Features").
 //   To stay compatible with ANY preset version (8, 9, 10, …) we supply the full Handlebars writerOpts (mainTemplate / headerPartial / commitPartial) and the grouping ourselves; the preset is then only used for its commit PARSER.
+//
+// WRITER 8 vs 9:
+//   semantic-release >= 26 bundles release-notes-generator 15 + conventional-changelog-writer 9, which dropped Handlebars: it ignores
+//   `mainTemplate` and renders via `writerOpts.template( context )`, a plain function. writer 8 never reads `template`, so both are supplied:
+//   writer 8 → Handlebars strings below; writer 9 → renderChangelog(), which produces the same markdown.
 // =============================================================================
 
 const SECTIONS = [
@@ -76,6 +81,30 @@ const commitPartial =
   '{{#unless hasIssueRef}}{{#if @root.linkReferences}} ([{{shortHash}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/commit/{{hash}})){{/if}}{{/unless}}' +
   '\n{{#if body}}\n{{body}}\n{{/if}}\n{{#if footer}}\n\n{{footer}}\n{{/if}}\n';
 
+// ── writer-9 template: same output as mainTemplate + headerPartial + commitPartial above ──
+const renderHeader = (ctx) => {
+  const version = ctx.linkCompare
+    ? `[${ctx.version}](${ctx.host}/${ctx.owner}/${ctx.repository}/compare/${ctx.previousTag}...${ctx.currentTag})`
+    : ctx.version;
+  return `## ${version}${ctx.date ? ` (${ctx.date})` : ''}\n`;
+};
+const renderCommit = (c, ctx) => {
+  const text = c.subject || c.header;
+  const link = !c.hasIssueRef && ctx.linkReferences
+    ? ` ([${c.shortHash}](${ctx.host}/${ctx.owner}/${ctx.repository}/commit/${c.hash}))`
+    : '';
+  return `*${c.scopeFmt ? ` ${c.scopeFmt}:` : ''} ${text}${link}\n${c.body ? `${c.body}\n` : ''}`;
+};
+const renderChangelog = (ctx) => {
+  const notes = (ctx.noteGroups || []).map(g =>
+    `\n### ⚠ ${g.title}\n\n` + g.notes.map(n => `* ${n.commit.scope ? `**${n.commit.scope}:** ` : ''}${n.text}\n`).join('')
+  );
+  const groups = (ctx.commitGroups || []).map(g =>
+    '\n' + (g.title ? `### ${g.title}\n\n` : '') + g.commits.map(c => renderCommit(c, ctx)).join('')
+  );
+  return renderHeader(ctx) + notes.join('') + groups.join('');
+};
+
 // ── dynamic changelog title ──
 // reuse an existing level-1 header (`# ...`) at the very top of CHANGELOG.md so new
 // releases are inserted BELOW it; if there is none, leave changelogTitle unset so
@@ -130,6 +159,8 @@ module.exports = {
         "headerPartial": headerPartial,
         "commitPartial": commitPartial,
         "footerPartial": "",
+        // writer 9 only ( ignored by writer 8 )
+        "template": renderChangelog,
         "transform": (commit) => {
           const c = { ...commit };
 

@@ -117,7 +117,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 --&gt;</code></pre></td>
       <td valign="middle"><code>html</code><br><code>xhtml</code></td>
       <td valign="middle"><code>.html</code><br><code>.htm</code><br><code>.xhtml</code></td>
-      <td valign="middle" width="600"><img src="assets/ft-dockerfile.png" alt="python screenshot"></td>
+      <td valign="middle" width="600"><img src="assets/ft-html.png" alt="python screenshot"></td>
   </tr>
 </tbody></table>
 
