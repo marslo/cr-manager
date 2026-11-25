@@ -11,6 +11,9 @@
 #   box_char      : repeated character forming the border run
 #   simple_format : true  → no box, just content_left-prefixed lines
 #                   false → box_left + box_char*n + box_right framing
+#   insert_after  : (optional) ordered list of regexes for leading lines the header goes below;
+#                   each pattern is tried once, in order, against the next line from the top
+#                   default: ['^#!', '^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)'] → shebang, then encoding
 
 # ── hash_comment ──────────────────────────────────────────────────────────────
 # # ============================================================================ #   → <box_left><box_char*n><box_right>
@@ -73,3 +76,51 @@ comment       = "*"
 content_left  = " * "
 content_right = ""
 simple_format = true
+
+# ── css_js_comment ────────────────────────────────────────────────────────────
+# /*!                                                                                → <start_line>
+#  *******************************************************************************   → <box_left><box_char*n><box_right>
+#  * Copyright © 2026 NAME                                                       *   → <content_left><..CONTENT..><content_right>
+#  * Licensed under the NAME License, Version x.y                                *   → <content_left><..CONTENT..><content_right>
+#  *******************************************************************************   → <box_left><box_char*n><box_right>
+#  */                                                                                → <end_line>
+
+[css_js_comment]
+filetypes = ["css", "javascript", "js"]
+suffixes  = [".css", ".js", ".mjs", ".cjs"]
+
+[css_js_comment.config]
+start_line    = "/*!"
+end_line      = " */"
+comment       = "*"
+content_left  = " * "
+content_right = " *"
+box_left      = " "
+box_right     = "*"
+box_char      = "*"
+simple_format = false
+
+# ── html_comment ──────────────────────────────────────────────────────────────
+# <!DOCTYPE html>                                                                    → kept on top ( insert_after )
+# <!--                                                                               → <start_line>
+#  ===============================================================================   → <box_left><box_char*n><box_right>
+#   Copyright © 2026 NAME                                                            → <content_left><..CONTENT..>
+#   Licensed under the NAME License, Version x.y                                     → <content_left><..CONTENT..>
+#  ===============================================================================   → <box_left><box_char*n><box_right>
+# -->                                                                                → <end_line>
+
+[html_comment]
+filetypes = ["html", "xhtml"]
+suffixes  = [".html", ".htm", ".xhtml"]
+
+[html_comment.config]
+start_line    = "<!--"
+end_line      = "-->"
+comment       = ""
+content_left  = "  "
+content_right = ""
+box_left      = " "
+box_right     = ""
+box_char      = "="
+simple_format = false
+insert_after  = ['^\ufeff?<\?xml\s', '(?i)^\ufeff?\s*<!doctype\s']

@@ -88,6 +88,28 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
       <td valign="middle"><code>.c</code><br><code>.cpp</code><br><code>.cxx</code><br><code>.hpp</code><br><code>.hxx</code></td>
       <td valign="middle" width="600"><img src="assets/ft-cpp.png" alt="c/cpp screenshot"></td>
   </tr>
+  <tr>
+      <td valign="middle"><pre><code>/*!
+ *****************************
+ * Copyright © 2026 Marslo   *
+ * Licensed under MIT        *
+ *****************************
+ */</code></pre></td>
+      <td valign="middle"><code>css</code><br><code>javascript</code><br><code>js</code></td>
+      <td valign="middle"><code>.css</code><br><code>.js</code><br><code>.mjs</code><br><code>.cjs</code></td>
+      <td valign="middle" width="600"></td>
+  </tr>
+  <tr>
+      <td valign="middle"><pre><code>&lt;!--
+ ===========================
+  Copyright © 2026 Marslo
+  Licensed under MIT
+ ===========================
+--&gt;</code></pre></td>
+      <td valign="middle"><code>html</code><br><code>xhtml</code></td>
+      <td valign="middle"><code>.html</code><br><code>.htm</code><br><code>.xhtml</code></td>
+      <td valign="middle" width="600"></td>
+  </tr>
 </tbody></table>
 
 ---
@@ -391,6 +413,47 @@ cr-manager --filetype cpp
 
 ---
 
+|      FILETYPE                   |              SUFFIXES              |
+|:-------------------------------:|:----------------------------------:|
+| `css`, `javascript`, `js`       | `.css`, `.js`, `.mjs`, `.cjs`      |
+
+```css
+/*!
+ *******************************************************************************
+ * Copyright © 2026 marslo                                                     *
+ * Licensed under the MIT License, Version 2.0                                 *
+ *******************************************************************************
+ */
+```
+
+```bash
+cr-manager --filetype css
+```
+
+---
+
+|      FILETYPE      |             SUFFIXES             |
+|:------------------:|:--------------------------------:|
+| `html`, `xhtml`    | `.html`, `.htm`, `.xhtml`        |
+
+```html
+<!DOCTYPE html>
+<!--
+ ===============================================================================
+  Copyright © 2026 marslo
+  Licensed under the MIT License, Version 2.0
+ ===============================================================================
+-->
+```
+
+- the header is inserted below a leading `<?xml ...?>` / `<!DOCTYPE ...>` line ( `insert_after` in [`formats.toml`](./cli/libs/formats.toml) )
+
+```bash
+cr-manager --filetype html
+```
+
+---
+
 # Running as pre-commit Hooks
 
 > [!TIP]
@@ -517,8 +580,8 @@ OPTIONS:
   --copyright FILE          Specify the copyright template file path (default: COPYRIGHT).
   -t, --filetype TYPE       Force override a filetype instead of auto-detection.
                             If provided, displays a formatted preview for that type. Supported: bash, c,
-                            c++, cpp, cxx, dockerfile, gradle, groovy, h, hpp, hxx, java, jenkinsfile,
-                            python, sh, shell
+                            c++, cpp, css, cxx, dockerfile, gradle, groovy, h, hpp, html, hxx, java,
+                            javascript, jenkinsfile, js, python, sh, shell, xhtml
   -r, --recursive           If FILES includes directories, process their contents recursively.
   --debug                   Debug mode: Preview the result of an action without modifying files.
   --verbose                 Show a detailed processing summary.

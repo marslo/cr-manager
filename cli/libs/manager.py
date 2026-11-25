@@ -28,6 +28,8 @@ from .helper import (
 
 # ====================== CONFIGURATION ======================
 LINE_LENGTH = 80
+# leading lines the header is inserted below, when a format has no `insert_after`: shebang, then encoding
+DEFAULT_INSERT_AFTER = [ r'^#!', r'^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)' ]
 
 def _load_file_type_map() -> Dict[str, Any]:
     """Load format configs from formats.toml (lives alongside this module)."""
@@ -41,14 +43,21 @@ def _load_file_type_map() -> Dict[str, Any]:
     except tomllib.TOMLDecodeError as e:
         print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Failed to parse {COLOR_MAGENTA_I}{toml_path}{COLOR_RESET} — {e}", file=sys.stderr )
         sys.exit(5)
-    return {
-        fmt: {
-            'filetypes' : set( data.get('filetypes', []) ),
-            'suffixes'  : set( data.get('suffixes',  []) ),
-            'config'    : data.get('config', {}),
+    type_map: Dict[str, Any] = {}
+    for fmt, data in raw.items():
+        config = data.get( 'config', {} )
+        try:
+            insert_after = [ re.compile(p) for p in config.get( 'insert_after', DEFAULT_INSERT_AFTER ) ]
+        except re.error as e:
+            print( f"{COLOR_RED}ERROR: {COLOR_DEBUG_I}Invalid regex in {COLOR_MAGENTA_I}[{fmt}]{COLOR_DEBUG_I} of {COLOR_MAGENTA_I}{toml_path}{COLOR_RESET} — {e}", file=sys.stderr )
+            sys.exit(5)
+        type_map[fmt] = {
+            'filetypes'    : set( data.get('filetypes', []) ),
+            'suffixes'     : set( data.get('suffixes',  []) ),
+            'config'       : config,
+            'insert_after' : insert_after,
         }
-        for fmt, data in raw.items()
-    }
+    return type_map
 
 # Format definitions are in cli/libs/formats.toml (loaded at import time).
 FILE_TYPE_MAP: Dict[str, Any] = _load_file_type_map()
@@ -258,7 +267,9 @@ class CopyrightManager:
             for line in processed_text_lines:
                 wrapped = textwrap.wrap( line, width=text_width, replace_whitespace=False, drop_whitespace=False ) if line else [""]
                 for part in wrapped:
-                    content_lines.append( f"{content_left}{part.ljust(text_width)}{content_right}" )
+                    line_out = f"{content_left}{part.ljust(text_width)}{content_right}"
+                    # no right delimiter: drop the ljust padding to avoid trailing whitespace
+                    content_lines.append( line_out if content_right else line_out.rstrip() )
         return content_lines
 
     def _format_copyright_as_list( self, fmt: str ) -> List[str]:
@@ -531,14 +542,13 @@ class CopyrightManager:
     def _insert_copyright( self, path: Path, content: str, formatted_lines: List[str], fmt: str, debug: bool = False, verbose: bool = False ) -> Tuple[bool, str]:
         # pylint: disable=too-many-arguments,too-many-positional-arguments
         """Inserts the formatted copyright block into the file content."""
-        _ = fmt             # avoid pylint unused-argument, kept for API compatibility
         lines = content.splitlines()
         insert_pos = 0
 
-        if lines and lines[0].startswith('#!'):
-            insert_pos = 1
-        if len( lines ) > insert_pos and re.match( r"^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)", lines[insert_pos] ):
-            insert_pos += 1
+        # skip leading lines matched by `insert_after`, each pattern tried once in order
+        for pattern in FILE_TYPE_MAP[fmt]['insert_after']:
+            if len( lines ) > insert_pos and pattern.match( lines[insert_pos] ):
+                insert_pos += 1
 
         new_lines: List[str] = []
 

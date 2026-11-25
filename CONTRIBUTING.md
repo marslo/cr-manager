@@ -273,6 +273,7 @@ All comment-style definitions live in [`cli/libs/formats.toml`](./cli/libs/forma
 | `box_right`     | Right side of the border line (`simple_format = false` only).        |
 | `box_char`      | Repeated character forming the border (e.g. `=`, `*`).               |
 | `simple_format` | `true` → no border box; `false` → bordered with `box_char` framing.  |
+| `insert_after`  | Optional. Ordered regex list of leading lines kept above the header; each pattern is tried once against the next line. Default: `['^#!', '^[ \t\f]*#.*?coding[:=]…']` ( shebang, then encoding ). e.g. `html_comment` uses `['^\ufeff?<\?xml\s', '(?i)^\ufeff?\s*<!doctype\s']`. |
 
 ## Format Modes
 
@@ -315,8 +316,8 @@ Append a new section to `formats.toml` — no code changes required:
 
 ```toml
 [xml_comment]
-filetypes = ["xml", "html", "xhtml"]
-suffixes  = [".xml", ".html", ".xhtml"]
+filetypes = ["xml"]
+suffixes  = [".xml"]
 
 [xml_comment.config]
 start_line    = "<!--"
@@ -325,7 +326,11 @@ comment       = ""
 content_left  = "  "
 content_right = ""
 simple_format = true
+insert_after  = ['^\ufeff?<\?xml\s']   # keep the XML declaration on the first line
 ```
+
+> [!WARNING]
+> A filetype / suffix must belong to one format only — the first match wins. `html` / `xhtml` are already taken by `html_comment`.
 
 Verify with:
 
