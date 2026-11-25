@@ -1,3 +1,13 @@
+## [4.1.2](https://github.com/marslo/cr-manager/compare/v4.1.1...v4.1.2) (2026-11-25)
+
+### CI/CD
+
+* **release**: adapt changelog transform to parser 7 ([7e229e2](https://github.com/marslo/cr-manager/commit/7e229e24cde17c381078ae48e3fb2d6fc0e800c1))
+  - file commits without a conventional type under the "Others" section
+  - join body and footer with a blank line so trailers keep their spacing
+  - drop the trailing squash-merge `---------` separator from commit bodies
+* **release**: drop the writer 8 Handlebars templates and align the changelog config with the stylus repos ([246336b](https://github.com/marslo/cr-manager/commit/246336b5f3fe0aa79459e31d0f9ece2237a59d83))
+
 ## [4.1.1](https://github.com/marslo/cr-manager/compare/v4.1.0...v4.1.1) (2026-11-25)
 
 ### CI/CD
