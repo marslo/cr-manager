@@ -95,7 +95,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 // ==========================</code></pre></td>
       <td valign="middle"><code>rust</code><br><code>rs</code></td>
       <td valign="middle"><code>.rs</code></td>
-      <td valign="middle" width="600"></td>
+      <td valign="middle" width="600"><img src="assets/ft-rs.png" alt="python screenshot"></td>
   </tr>
   <tr>
       <td valign="middle"><pre><code>/*!
@@ -106,7 +106,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
  */</code></pre></td>
       <td valign="middle"><code>css</code><br><code>javascript</code><br><code>js</code></td>
       <td valign="middle"><code>.css</code><br><code>.js</code><br><code>.mjs</code><br><code>.cjs</code></td>
-      <td valign="middle" width="600"></td>
+      <td valign="middle" width="600"><img src="assets/ft-js.png" alt="python screenshot"></td>
   </tr>
   <tr>
       <td valign="middle"><pre><code>&lt;!--
@@ -117,7 +117,7 @@ A tool to automatically **add**, **update**, or **delete** multi-format copyrigh
 --&gt;</code></pre></td>
       <td valign="middle"><code>html</code><br><code>xhtml</code></td>
       <td valign="middle"><code>.html</code><br><code>.htm</code><br><code>.xhtml</code></td>
-      <td valign="middle" width="600"></td>
+      <td valign="middle" width="600"><img src="assets/ft-dockerfile.png" alt="python screenshot"></td>
   </tr>
 </tbody></table>
 
