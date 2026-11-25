@@ -1,3 +1,37 @@
+## [4.1.0](https://github.com/marslo/cr-manager/compare/v4.0.2...v4.1.0) (2026-11-25)
+
+### Features
+
+* **formats**: add css/js and html copyright header formats ([08136d9](https://github.com/marslo/cr-manager/commit/08136d9d111990af9618c821704dacfbe9d68ffb))
+  - css_js_comment: `/*! ... */` bordered block for .css / .js / .mjs / .cjs
+  - html_comment: `<!-- ... -->` bordered block for .html / .htm / .xhtml, inserted below a leading `<?xml ...?>` / `<!DOCTYPE ...>`
+  - formats.toml: optional `insert_after` regex list for leading lines kept above the header ( default: shebang, then encoding )
+  - strip ljust padding on bordered content lines without a right delimiter
+  - pre-commit hook: match css / js / html, exclude *.min.css / *.min.js
+  - docs, bash completion and samples
+* **formats**: add rust copyright header format ([3703b4a](https://github.com/marslo/cr-manager/commit/3703b4abf45cdee160a9656366ac74a55eaefa9d))
+  - rust_comment: `// ===` bordered line comments for .rs; plain `//` only, as `///` `//!` `/**` `/*!` are rustdoc comments
+  - keep a cargo-script shebang on top; an inner attribute `#![...]` is not skipped
+  - fix(manager): use the adjacent border pair that encloses the copyright, so an existing `# ===` / `// ===` banner in the same comment block is no longer replaced or deleted
+  - docs, bash completion and sample
+* **formats**: detect Dockerfile / Containerfile by file name ([a59263c](https://github.com/marslo/cr-manager/commit/a59263c1b1706a83445d87f1fbee3c8fe37d2fce))
+  - formats.toml: optional `filenames` regex list, checked before `suffixes`
+  - hash_comment: match Dockerfile / Containerfile as a dot-separated name part, case-insensitive ( Dockerfile, Dockerfile.dev, app.Dockerfile, build.dockerfile ); add containerfile filetype and .containerfile suffix
+  - pre-commit: add `cr-manager-dockerfile` hook ( case-insensitive `files`, `--filetype dockerfile` ); drop Dockerfile from the main hook
+  - docs and bash completion
+
+### Documentation
+
+* **readme**: update readme for 3 new filetype screenshots ([ad393a5](https://github.com/marslo/cr-manager/commit/ad393a5d28ed0e31538cfdd0bee8c79c3208a4a8))
+
+### CI/CD
+
+* **release**: use function templates for changelog notes ([10ff986](https://github.com/marslo/cr-manager/commit/10ff986ebbd6f7ae4dcf8270612ea00dc6c9d825))
+  - replace Handlebars `mainTemplate` / `headerPartial` / `commitPartial` strings with function versions
+  - add `template`, `preamblePartial` and `footerPartial` for `conventional-changelog-writer` 9
+  - fix `headerPartial is not a function` on `semantic-release` 26
+* **workflow**: add branch tip revision to sync summary (#43)
+
 ## [4.0.2](https://github.com/marslo/cr-manager/compare/v4.0.1...v4.0.2) (2026-07-29)
 
 ### Others

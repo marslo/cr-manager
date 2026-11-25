@@ -361,7 +361,7 @@ test -f /etc/bash_completion.d/cr-manager && sudo rm -rf /etc/bash_completion.d/
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.2
+    rev: v4.1.0
     hooks:
       - id: cr-manager
         args: ["--update"]
@@ -372,7 +372,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.2
+    rev: v4.1.0
     hooks:
       - id: cr-manager
         args: ["--update", "--copyright", "path/to/COPYRIGHT"]
@@ -388,7 +388,7 @@ repos:
       - id: cr-manager
         name: cr-manager
         language: python
-        additional_dependencies: ["cr-manager==4.0.2"]
+        additional_dependencies: ["cr-manager==4.1.0"]
         entry: cr-manager
         args: ["--update", "--copyright", "COPYRIGHT"]
         files: ^(jenkinsfile/|.*\.(groovy|py|sh)$)
@@ -403,7 +403,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.2
+    rev: v4.1.0
     hooks:
       - id: cr-manager
         args: ["--check"]
@@ -416,7 +416,7 @@ repos:
 ---
 repos:
   - repo: https://github.com/marslo/cr-manager
-    rev: v4.0.2
+    rev: v4.1.0
     hooks:
       - id: cr-manager-dockerfile
         args: ["--update", "--filetype", "dockerfile", "--copyright", "COPYRIGHT"]
