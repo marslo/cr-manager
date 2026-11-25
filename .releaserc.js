@@ -2,13 +2,10 @@
 // Self-contained changelog config.
 //
 // WHY THE TEMPLATES ARE INLINED HERE:
-//   @semantic-release/release-notes-generator renders with the Handlebars-based conventional-changelog-writer. conventional-changelog-conventionalcommits >= 9 dropped its Handlebars writerOpts in favour of @conventional-changelog/ template, which release-notes-generator does NOT use — so with preset >= 9 the section grouping silently disappears (flat list, no "### Features").
-//   To stay compatible with ANY preset version (8, 9, 10, …) we supply the full Handlebars writerOpts (mainTemplate / headerPartial / commitPartial) and the grouping ourselves; the preset is then only used for its commit PARSER.
-//
-// WRITER 8 vs 9:
-//   semantic-release >= 26 bundles release-notes-generator 15 + conventional-changelog-writer 9, which dropped Handlebars: it ignores
-//   `mainTemplate` and renders via `writerOpts.template( context )`, a plain function. writer 8 never reads `template`, so both are supplied:
-//   writer 8 → Handlebars strings below; writer 9 → renderChangelog(), which produces the same markdown.
+//   semantic-release >= 26 bundles @semantic-release/release-notes-generator >= 15, which renders with conventional-changelog-writer >= 9: `writerOpts.template` and the `*Partial` options are plain functions ( no Handlebars; `mainTemplate` is ignored ).
+//   the preset ( conventional-changelog-conventionalcommits >= 9 ) ships function templates too, but they render the stock layout; passing Handlebars strings for `headerPartial` / `commitPartial` made the preset's `template()` throw "headerPartial is not a function".
+//   so we supply our own function `template` / `headerPartial` / `commitPartial` and the grouping ourselves; the preset is then only used for its commit PARSER.
+//   requires writer >= 9 ( semantic-release >= 26 ); for semantic-release <= 25 ( Handlebars writer 8 ) the old string templates are needed instead.
 // =============================================================================
 
 const SECTIONS = [
@@ -40,75 +37,47 @@ const stripNotes      = (lines) => {
   });
 };
 
-// ── Handlebars templates (writer-8 compatible; vendored from the conventional-commits preset so they work regardless of the installed preset major) ──
-const mainTemplate = `{{> header}}
-{{#if noteGroups}}
-{{#each noteGroups}}
-
-### ⚠ {{title}}
-
-{{#each notes}}
-* {{#if commit.scope}}**{{commit.scope}}:** {{/if}}{{text}}
-{{/each}}
-{{/each}}
-{{/if}}
-{{#each commitGroups}}
-
-{{#if title}}
-### {{title}}
-
-{{/if}}
-{{#each commits}}
-{{> commit root=@root}}
-{{/each}}
-{{/each}}
-`;
-
-const headerPartial = `## {{#if @root.linkCompare~}}
-  [{{version}}]({{~@root.host}}/{{#if this.owner}}{{~this.owner}}{{else}}{{~@root.owner}}{{/if}}/{{#if this.repository}}{{~this.repository}}{{else}}{{~@root.repository}}{{/if}}/compare/{{previousTag}}...{{currentTag}})
-{{~else}}
-  {{~version}}
-{{~/if}}
-{{~#if date}} ({{date}})
-{{/if}}
-`;
-
-// commit line: bold each comma-split scope as **scope:** (built as scopeFmt in transform) and keep the subject. PR commits carry an inline
-// "(#N)" that GitHub auto-links, so leave them link-free; only direct pushes (no "(#N)") get an
-// appended ([shortHash](…/commit/<hash>)) link. body/footer follow (built in transform)
-const commitPartial =
-  '*{{#if scopeFmt}} {{scopeFmt}}:{{/if}} {{#if subject}}{{subject}}{{else}}{{header}}{{/if}}' +
-  '{{#unless hasIssueRef}}{{#if @root.linkReferences}} ([{{shortHash}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/commit/{{hash}})){{/if}}{{/unless}}' +
-  '\n{{#if body}}\n{{body}}\n{{/if}}\n{{#if footer}}\n\n{{footer}}\n{{/if}}\n';
-
-// ── writer-9 template: same output as mainTemplate + headerPartial + commitPartial above ──
-const renderHeader = (ctx) => {
-  const version = ctx.linkCompare
-    ? `[${ctx.version}](${ctx.host}/${ctx.owner}/${ctx.repository}/compare/${ctx.previousTag}...${ctx.currentTag})`
-    : ctx.version;
-  return `## ${version}${ctx.date ? ` (${ctx.date})` : ''}\n`;
+// ── function templates (conventional-changelog-writer >= 9; plain string building, no Handlebars) ──
+// version header: `## [x.y.z](<host>/<owner>/<repo>/compare/<prev>...<cur>) (<date>)`; plain version when there is no previous tag
+const headerPartial = (ctx) => {
+  const { linkCompare, version, host, owner, repository, previousTag, currentTag, date } = ctx;
+  const ver = linkCompare
+    ? `[${version}](${host}/${owner}/${repository}/compare/${previousTag}...${currentTag})`
+    : version;
+  return `## ${ver}${date ? ` (${date})` : ''}`;
 };
-const renderCommit = (c, ctx) => {
-  const text = c.subject || c.header;
-  const link = !c.hasIssueRef && ctx.linkReferences
-    ? ` ([${c.shortHash}](${ctx.host}/${ctx.owner}/${ctx.repository}/commit/${c.hash}))`
-    : '';
-  return `*${c.scopeFmt ? ` ${c.scopeFmt}:` : ''} ${text}${link}\n${c.body ? `${c.body}\n` : ''}`;
+
+// commit line: bold each comma-split scope as **scope:** (built as scopeFmt in transform) and keep the subject. PR commits carry an inline "(#N)" that GitHub auto-links, so leave them link-free; only direct pushes (no "(#N)") get an appended ([shortHash](…/commit/<hash>)) link. body (built in transform) follows on the next line(s)
+const commitPartial = (ctx, c) => {
+  let line = `*${c.scopeFmt ? ` ${c.scopeFmt}:` : ''} ${c.subject || c.header}`;
+  if (!c.hasIssueRef && ctx.linkReferences) {
+    line += ` ([${c.shortHash}](${ctx.host}/${ctx.owner}/${ctx.repository}/commit/${c.hash}))`;
+  }
+  return c.body ? `${line}\n${c.body}` : line;
 };
-const renderChangelog = (ctx) => {
-  const notes = (ctx.noteGroups || []).map(g =>
-    `\n### ⚠ ${g.title}\n\n` + g.notes.map(n => `* ${n.commit.scope ? `**${n.commit.scope}:** ` : ''}${n.text}\n`).join('')
-  );
-  const groups = (ctx.commitGroups || []).map(g =>
-    '\n' + (g.title ? `### ${g.title}\n\n` : '') + g.commits.map(c => renderCommit(c, ctx)).join('')
-  );
-  return renderHeader(ctx) + notes.join('') + groups.join('');
+
+const preamblePartial = () => '';
+const footerPartial   = () => '';
+
+// release block: header, breaking-change notes ("### ⚠ <title>"), then one "### <section>" per commit group; blocks separated by a blank line
+const template = (ctx) => {
+  const blocks = [ ctx.headerPartial(ctx) ];
+
+  (ctx.noteGroups || []).forEach(group => {
+    const items = group.notes.map(n => `* ${n.commit && n.commit.scope ? `**${n.commit.scope}:** ` : ''}${n.text}`);
+    blocks.push([ `### ⚠ ${group.title}`, '', ...items ].join('\n'));
+  });
+
+  (ctx.commitGroups || []).forEach(group => {
+    const items = group.commits.map(c => ctx.commitPartial(ctx, c));
+    blocks.push([ ...(group.title ? [ `### ${group.title}`, '' ] : []), ...items ].join('\n'));
+  });
+
+  return blocks.join('\n\n');
 };
 
 // ── dynamic changelog title ──
-// reuse an existing level-1 header (`# ...`) at the very top of CHANGELOG.md so new
-// releases are inserted BELOW it; if there is none, leave changelogTitle unset so
-// semantic-release just prepends (no title is forced onto title-less changelogs)
+// reuse an existing level-1 header (`# ...`) at the very top of CHANGELOG.md so new releases are inserted BELOW it; if there is none, leave changelogTitle unset so semantic-release just prepends (no title is forced onto title-less changelogs)
 const fs = require('fs');
 const path = require('path');
 const CHANGELOG_FILE = 'CHANGELOG.md';
@@ -155,12 +124,11 @@ module.exports = {
         },
         "commitsSort": ["header", "subject"],
         "noteGroupsSort": "title",
-        "mainTemplate": mainTemplate,
+        "template": template,
         "headerPartial": headerPartial,
+        "preamblePartial": preamblePartial,
         "commitPartial": commitPartial,
-        "footerPartial": "",
-        // writer 9 only ( ignored by writer 8 )
-        "template": renderChangelog,
+        "footerPartial": footerPartial,
         "transform": (commit) => {
           const c = { ...commit };
 
@@ -169,14 +137,12 @@ module.exports = {
             c.type = TYPE_TO_SECTION[c.type];
           }
 
-          // preset's default transform (overridden here) normally sets shortHash; restore it
-          // so the commit link text isn't empty ("[](…/commit/<hash>)")
+          // preset's default transform (overridden here) normally sets shortHash; restore it so the commit link text isn't empty ("[](…/commit/<hash>)")
           if (typeof c.hash === 'string') {
             c.shortHash = c.hash.substring(0, 7);
           }
 
-          // PR commits carry an inline "(#N)" that GitHub auto-links; keep it verbatim and skip
-          // the sha link. direct pushes (no "(#N)") get the commit-sha link (see commitPartial)
+          // PR commits carry an inline "(#N)" that GitHub auto-links; keep it verbatim and skip the sha link. direct pushes (no "(#N)") get the commit-sha link (see commitPartial)
           c.hasIssueRef = /\(#\d+\)/.test(c.subject || '');
 
           // comma-split the scope and bold each part -> "**a**, **b**" (rendered via scopeFmt)
@@ -184,9 +150,7 @@ module.exports = {
             c.scopeFmt = c.scope.split(',').map(s => '**' + s.trim() + '**').join(', ');
           }
 
-          // the parser may split trailing body lines into `footer` (e.g. a bullet containing an issue-like "#N");
-          // fold body + footer back together, drop Signed-off-by and BREAKING CHANGE notes (rendered from `notes`),
-          // collapse repeated blank lines and trim trailing ones
+          // the parser may split trailing body lines into `footer` (e.g. a bullet containing an issue-like "#N"); fold body + footer back together, drop Signed-off-by and BREAKING CHANGE notes (rendered from `notes`), collapse repeated blank lines and trim trailing ones
           const detail = stripNotes(
             [c.body, c.footer]
               .filter(Boolean)
@@ -196,8 +160,7 @@ module.exports = {
           ).filter((l, i, a) => !(l.trim() === '' && i > 0 && a[i - 1].trim() === ''));
           while (detail.length && detail[detail.length - 1].trim() === '') { detail.pop(); }
           if (detail.some(l => l.trim() !== '')) {
-            // bullet body (`- ...`) -> 2-space sub-list right under the subject;
-            // free-form body (no bullets) -> blank line + 4-space verbatim block
+            // bullet body (`- ...`) -> 2-space sub-list right under the subject; free-form body (no bullets) -> blank line + 4-space verbatim block
             const hasBullets = detail.some(l => /^\s*-\s+\S/.test(l));
             const indent = hasBullets ? '  ' : '    ';
             const block = detail.map(l => l.trim() === '' ? '' : indent + l).join('\n');
